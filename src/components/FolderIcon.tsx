@@ -18,6 +18,7 @@ export const FolderIcon = ({
   onDragEnd,
 }: FolderIconProps) => {
   const [isDragging, setIsDragging] = useState(false);
+  const [dragStartPos, setDragStartPos] = useState({ x: 0, y: 0 });
   const clickTimeoutRef = useRef<NodeJS.Timeout>();
 
   const handleClick = () => {
@@ -40,20 +41,29 @@ export const FolderIcon = ({
     };
   }, []);
 
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (e.button !== 0) return; // Only left click
+    setDragStartPos({ x: e.clientX, y: e.clientY });
+  };
+
   return (
     <div
-      className={`absolute desktop-icon cursor-pointer select-none ${
-        isDragging ? 'opacity-50' : 'opacity-100'
+      className={`absolute desktop-icon cursor-move select-none ${
+        isDragging ? 'opacity-50 z-50' : 'opacity-100'
       }`}
       style={{
         left: `${folder.position.x}px`,
         top: `${folder.position.y}px`,
       }}
       onClick={handleClick}
+      onMouseDown={handleMouseDown}
       onContextMenu={onContextMenu}
       draggable
       onDragStart={(e) => {
         setIsDragging(true);
+        e.dataTransfer.effectAllowed = 'move';
+        const rect = e.currentTarget.getBoundingClientRect();
+        e.dataTransfer.setDragImage(e.currentTarget, rect.width / 2, rect.height / 2);
         onDragStart(e);
       }}
       onDragEnd={(e) => {

@@ -1,16 +1,31 @@
 import { X, Minus, Maximize2 } from 'lucide-react';
-import { WindowState } from '@/types/desktop';
+import { WindowState, Folder } from '@/types/desktop';
 import { useState, useRef, useEffect } from 'react';
+import { FolderContent } from './FolderContent';
 
 interface WindowProps {
   window: WindowState;
+  folder: Folder;
   onClose: () => void;
   onMinimize: () => void;
   onFocus: () => void;
   onMove: (x: number, y: number) => void;
+  onCreateSubfolder: (parentId: string, name: string) => void;
+  onOpenSubfolder: (subfolder: Folder) => void;
+  onSubfolderContextMenu: (e: React.MouseEvent, folderId: string, subfolderId: string) => void;
 }
 
-export const Window = ({ window, onClose, onMinimize, onFocus, onMove }: WindowProps) => {
+export const Window = ({
+  window,
+  folder,
+  onClose,
+  onMinimize,
+  onFocus,
+  onMove,
+  onCreateSubfolder,
+  onOpenSubfolder,
+  onSubfolderContextMenu,
+}: WindowProps) => {
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const windowRef = useRef<HTMLDivElement>(null);
@@ -94,11 +109,15 @@ export const Window = ({ window, onClose, onMinimize, onFocus, onMove }: WindowP
       </div>
 
       {/* Content */}
-      <div className="p-6 h-[calc(100%-3rem)] overflow-auto bg-white/50 dark:bg-gray-900/50">
-        <div className="text-center text-muted-foreground">
-          <p className="text-lg font-medium mb-2">Содержимое папки "{window.title}"</p>
-          <p className="text-sm">Здесь будут отображаться файлы и подпапки</p>
-        </div>
+      <div className="h-[calc(100%-3rem)] overflow-hidden bg-white/50 dark:bg-gray-900/50">
+        <FolderContent
+          folder={folder}
+          onCreateSubfolder={(name) => onCreateSubfolder(folder.id, name)}
+          onOpenSubfolder={onOpenSubfolder}
+          onSubfolderContextMenu={(e, subfolderId) =>
+            onSubfolderContextMenu(e, folder.id, subfolderId)
+          }
+        />
       </div>
     </div>
   );

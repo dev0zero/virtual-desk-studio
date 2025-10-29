@@ -5,6 +5,7 @@ import { Window } from './Window';
 import { Dock } from './Dock';
 import { ContextMenu } from './ContextMenu';
 import { toast } from 'sonner';
+import { Folder } from '@/types/desktop';
 
 interface ContextMenuState {
   x: number;
@@ -45,17 +46,22 @@ export const Desktop = () => {
   };
 
   const handleDragEnd = (folderId: string, e: React.DragEvent) => {
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    updateFolderPosition(folderId, {
-      x: e.clientX - rect.width / 2,
-      y: e.clientY - rect.height / 2,
-    });
+    e.preventDefault();
+    // Calculate new position based on where the drag ended
+    const newX = Math.max(0, Math.min(e.clientX - 40, window.innerWidth - 120));
+    const newY = Math.max(0, Math.min(e.clientY - 40, window.innerHeight - 120));
+    
+    updateFolderPosition(folderId, { x: newX, y: newY });
   };
 
-  const handleCreateFolder = () => {
+  const handleCreateFolder = (parentId?: string) => {
     const name = prompt('Введите имя новой папки:');
     if (name) {
-      createFolder(name, contextMenu ? { x: contextMenu.x, y: contextMenu.y } : { x: 100, y: 100 });
+      createFolder(
+        name,
+        contextMenu ? { x: contextMenu.x, y: contextMenu.y } : { x: 100, y: 100 },
+        parentId
+      );
       toast.success('Папка создана');
     }
   };
@@ -94,6 +100,27 @@ export const Desktop = () => {
   const pinnedFolders = folders.filter(f => f.isPinned);
   const currentFolder = contextMenu?.folderId ? folders.find(f => f.id === contextMenu.folderId) : undefined;
 
+  const getFolderById = (id: string): Folder | undefined => {
+    // Search in top-level folders
+    const folder = folders.find(f => f.id === id);
+    if (folder) return folder;
+    
+    // Search in subfolders
+    for (const f of folders) {
+      if (f.subFolders) {
+        const subfolder = f.subFolders.find(sf => sf.id === id);
+        if (subfolder) return subfolder;
+      }
+    }
+    return undefined;
+  };
+
+  const handleSubfolderContextMenu = (e: React.MouseEvent, parentId: string, subfolderId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setContextMenu({ x: e.clientX, y: e.clientY, folderId: subfolderId });
+  };
+
   return (
     <div
       className="w-screen h-screen bg-gradient-to-br from-[hsl(var(--desktop-bg-start))] to-[hsl(var(--desktop-bg-end))] relative overflow-hidden"
@@ -114,16 +141,25 @@ export const Desktop = () => {
       ))}
 
       {/* Windows */}
-      {windows.map(window => (
-        <Window
-          key={window.id}
-          window={window}
-          onClose={() => closeWindow(window.id)}
-          onMinimize={() => minimizeWindow(window.id)}
-          onFocus={() => focusWindow(window.id)}
-          onMove={(x, y) => updateWindowPosition(window.id, { x, y })}
-        />
-      ))}
+      {windows.map(window => {
+        const windowFolder = getFolderById(window.folderId);
+        if (!windowFolder) return null;
+        
+        return (
+          <Window
+            key={window.id}
+            window={window}
+            folder={windowFolder}
+            onClose={() => closeWindow(window.id)}
+            onMinimize={() => minimizeWindow(window.id)}
+            onFocus={() => focusWindow(window.id)}
+            onMove={(x, y) => updateWindowPosition(window.id, { x, y })}
+            onCreateSubfolder={handleCreateFolder}
+            onOpenSubfolder={openWindow}
+            onSubfolderContextMenu={handleSubfolderContextMenu}
+          />
+        );
+      })}
 
       {/* Dock */}
       <Dock

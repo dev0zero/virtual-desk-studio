@@ -13,6 +13,8 @@ export interface Folder {
   name: string;
   position: Position;
   isPinned?: boolean;
+  parentId?: string;
+  subFolders?: Folder[];
 }
 
 export interface WindowState {

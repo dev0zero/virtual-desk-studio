@@ -12,13 +12,28 @@ export const useDesktop = () => {
   const [clipboard, setClipboard] = useState<ClipboardItem | null>(null);
   const [maxZIndex, setMaxZIndex] = useState(1);
 
-  const createFolder = useCallback((name: string, position: Position) => {
+  const createFolder = useCallback((name: string, position: Position, parentId?: string) => {
     const newFolder: Folder = {
       id: Date.now().toString(),
       name,
       position,
+      parentId,
+      subFolders: [],
     };
-    setFolders(prev => [...prev, newFolder]);
+    
+    if (parentId) {
+      // Adding subfolder to parent
+      setFolders(prev =>
+        prev.map(f =>
+          f.id === parentId
+            ? { ...f, subFolders: [...(f.subFolders || []), newFolder] }
+            : f
+        )
+      );
+    } else {
+      // Adding folder to desktop
+      setFolders(prev => [...prev, newFolder]);
+    }
   }, []);
 
   const deleteFolder = useCallback((id: string) => {
