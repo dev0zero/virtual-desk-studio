@@ -1,4 +1,4 @@
-import { Copy, Scissors, Trash2, Plus, Pin, PinOff } from 'lucide-react';
+import { Copy, Scissors, Trash2, Plus, Pin, PinOff, Clipboard, ArrowDownAZ } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 
 interface ContextMenuProps {
@@ -9,6 +9,8 @@ interface ContextMenuProps {
   onCut?: () => void;
   onDelete?: () => void;
   onNew?: () => void;
+  onPaste?: () => void;
+  onSort?: () => void;
   onPin?: () => void;
   isPinned?: boolean;
 }
@@ -21,6 +23,8 @@ export const ContextMenu = ({
   onCut,
   onDelete,
   onNew,
+  onPaste,
+  onSort,
   onPin,
   isPinned,
 }: ContextMenuProps) => {
@@ -39,6 +43,8 @@ export const ContextMenu = ({
 
   const menuItems = [
     onNew && { icon: Plus, label: 'Создать папку', action: onNew },
+    onPaste && { icon: Clipboard, label: 'Вставить', action: onPaste },
+    onSort && { icon: ArrowDownAZ, label: 'Упорядочить по имени', action: onSort },
     onCopy && { icon: Copy, label: 'Копировать', action: onCopy },
     onCut && { icon: Scissors, label: 'Вырезать', action: onCut },
     onPin && {

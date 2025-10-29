@@ -45,13 +45,23 @@ export const Desktop = () => {
     setContextMenu({ x: e.clientX, y: e.clientY, folderId });
   };
 
-  const handleDragEnd = (folderId: string, e: React.DragEvent) => {
-    e.preventDefault();
-    // Calculate new position based on where the drag ended
-    const newX = Math.max(0, Math.min(e.clientX - 40, window.innerWidth - 120));
-    const newY = Math.max(0, Math.min(e.clientY - 40, window.innerHeight - 120));
-    
-    updateFolderPosition(folderId, { x: newX, y: newY });
+  const handleDrag = (folderId: string, e: React.DragEvent) => {
+    if (e.clientX === 0 && e.clientY === 0) return;
+    // Position updates are handled in FolderIcon for smooth dragging
+  };
+
+  const handleDragEnd = (folderId: string, position: { x: number; y: number }) => {
+    updateFolderPosition(folderId, position);
+  };
+
+  const handleSortFolders = () => {
+    const sorted = [...folders].sort((a, b) => a.name.localeCompare(b.name));
+    sorted.forEach((folder, index) => {
+      const x = 50;
+      const y = 50 + index * 130;
+      updateFolderPosition(folder.id, { x, y });
+    });
+    toast.success('Папки упорядочены по имени');
   };
 
   const handleCreateFolder = (parentId?: string) => {
@@ -133,10 +143,8 @@ export const Desktop = () => {
           folder={folder}
           onDoubleClick={() => openWindow(folder)}
           onContextMenu={(e) => handleFolderContextMenu(e, folder.id)}
-          onDragStart={(e) => {
-            e.dataTransfer.effectAllowed = 'move';
-          }}
-          onDragEnd={(e) => handleDragEnd(folder.id, e)}
+          onDrag={(e) => handleDrag(folder.id, e)}
+          onDragEnd={(pos) => handleDragEnd(folder.id, pos)}
         />
       ))}
 
@@ -182,6 +190,8 @@ export const Desktop = () => {
           y={contextMenu.y}
           onClose={() => setContextMenu(null)}
           onNew={!contextMenu.folderId ? handleCreateFolder : undefined}
+          onPaste={!contextMenu.folderId && clipboard ? handlePaste : undefined}
+          onSort={!contextMenu.folderId ? handleSortFolders : undefined}
           onCopy={contextMenu.folderId ? () => handleCopyFolder(contextMenu.folderId!) : undefined}
           onCut={contextMenu.folderId ? () => handleCutFolder(contextMenu.folderId!) : undefined}
           onDelete={contextMenu.folderId ? () => handleDeleteFolder(contextMenu.folderId!) : undefined}
