@@ -1,11 +1,20 @@
 import { useState, useCallback } from 'react';
-import { Folder, WindowState, ClipboardItem, Position, Size } from '@/types/desktop';
+import { Folder, WindowState, ClipboardItem, Position, Size, FileItem } from '@/types/desktop';
+
+const exampleFiles: FileItem[] = [
+  { id: 'f1', name: 'example.jpg', type: 'image/jpeg', size: 1024000 },
+  { id: 'f2', name: 'photo.png', type: 'image/png', size: 2048000 },
+  { id: 'f3', name: 'animation.gif', type: 'image/gif', size: 512000 },
+  { id: 'f4', name: 'song.mp3', type: 'audio/mp3', size: 3072000 },
+  { id: 'f5', name: 'sound.wav', type: 'audio/wav', size: 4096000 },
+  { id: 'f6', name: 'track.ogg', type: 'audio/ogg', size: 2560000 },
+];
 
 export const useDesktop = () => {
   const [folders, setFolders] = useState<Folder[]>([
-    { id: '1', name: 'Документы', position: { x: 50, y: 50 } },
-    { id: '2', name: 'Картинки', position: { x: 50, y: 180 } },
-    { id: '3', name: 'Музыка', position: { x: 50, y: 310 } },
+    { id: '1', name: 'Документы', position: { x: 50, y: 50 }, files: [] },
+    { id: '2', name: 'Картинки', position: { x: 50, y: 180 }, files: exampleFiles.filter(f => f.type.startsWith('image')) },
+    { id: '3', name: 'Музыка', position: { x: 50, y: 310 }, files: exampleFiles.filter(f => f.type.startsWith('audio')) },
   ]);
 
   const [windows, setWindows] = useState<WindowState[]>([]);
@@ -69,6 +78,7 @@ export const useDesktop = () => {
         position: { x: 200 + windows.length * 30, y: 100 + windows.length * 30 },
         size: { width: 600, height: 400 },
         isMinimized: false,
+        isMaximized: false,
         zIndex: maxZIndex + 1,
       };
       setWindows(prev => [...prev, newWindow]);
@@ -133,6 +143,52 @@ export const useDesktop = () => {
     );
   }, []);
 
+  const renameFolder = useCallback((id: string, newName: string) => {
+    setFolders(prev =>
+      prev.map(f => (f.id === id ? { ...f, name: newName } : f))
+    );
+    setWindows(prev =>
+      prev.map(w => (w.folderId === id ? { ...w, title: newName } : w))
+    );
+  }, []);
+
+  const maximizeWindow = useCallback((id: string) => {
+    setWindows(prev =>
+      prev.map(w => {
+        if (w.id === id) {
+          if (w.isMaximized) {
+            return {
+              ...w,
+              isMaximized: false,
+              size: w.originalSize || { width: 600, height: 400 },
+              position: w.originalPosition || { x: 200, y: 100 },
+            };
+          } else {
+            return {
+              ...w,
+              isMaximized: true,
+              originalSize: w.size,
+              originalPosition: w.position,
+              size: { width: window.innerWidth, height: window.innerHeight },
+              position: { x: 0, y: 0 },
+            };
+          }
+        }
+        return w;
+      })
+    );
+  }, []);
+
+  const addFileToFolder = useCallback((folderId: string, file: FileItem) => {
+    setFolders(prev =>
+      prev.map(f =>
+        f.id === folderId
+          ? { ...f, files: [...(f.files || []), file] }
+          : f
+      )
+    );
+  }, []);
+
   return {
     folders,
     windows,
@@ -150,5 +206,8 @@ export const useDesktop = () => {
     cutFolder,
     pasteFolder,
     togglePin,
+    renameFolder,
+    maximizeWindow,
+    addFileToFolder,
   };
 };

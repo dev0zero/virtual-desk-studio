@@ -49,9 +49,18 @@ export const Dock = ({ pinnedFolders, windows, onFolderClick, onWindowClick }: D
             <button
               key={folder.id}
               onClick={() => onFolderClick(folder)}
-              className="dock-icon w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-accent shadow-lg flex items-center justify-center relative group"
+              className="dock-icon w-14 h-14 rounded-xl shadow-lg flex items-center justify-center relative group overflow-hidden"
             >
-              <FolderLucide className="w-7 h-7 text-white" />
+              <svg viewBox="0 0 64 64" className="w-full h-full">
+                <defs>
+                  <linearGradient id={`dock-folder-${folder.id}`} x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.9" />
+                    <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity="1" />
+                  </linearGradient>
+                </defs>
+                <path d="M 8 20 L 8 52 C 8 54 9 56 11 56 L 53 56 C 55 56 56 54 56 52 L 56 24 C 56 22 55 20 53 20 Z" fill={`url(#dock-folder-${folder.id})`} opacity="0.85" />
+                <path d="M 8 20 L 8 14 C 8 12 9 10 11 10 L 26 10 L 30 16 L 53 16 C 55 16 56 17 56 19 L 56 20 Z" fill={`url(#dock-folder-${folder.id})`} />
+              </svg>
               {activeWindows.some(w => w.folderId === folder.id) && (
                 <div className="absolute -bottom-1 w-1 h-1 bg-white rounded-full" />
               )}
@@ -66,9 +75,18 @@ export const Dock = ({ pinnedFolders, windows, onFolderClick, onWindowClick }: D
             <button
               key={window.id}
               onClick={() => onWindowClick(window.id)}
-              className="dock-icon w-14 h-14 rounded-xl bg-gradient-to-br from-secondary to-muted shadow-lg flex items-center justify-center relative group"
+              className="dock-icon w-14 h-14 rounded-xl shadow-lg flex items-center justify-center relative group overflow-hidden"
             >
-              <FolderLucide className="w-7 h-7 text-foreground" />
+              <svg viewBox="0 0 64 64" className="w-full h-full">
+                <defs>
+                  <linearGradient id={`dock-min-${window.id}`} x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.9" />
+                    <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity="1" />
+                  </linearGradient>
+                </defs>
+                <path d="M 8 20 L 8 52 C 8 54 9 56 11 56 L 53 56 C 55 56 56 54 56 52 L 56 24 C 56 22 55 20 53 20 Z" fill={`url(#dock-min-${window.id})`} opacity="0.85" />
+                <path d="M 8 20 L 8 14 C 8 12 9 10 11 10 L 26 10 L 30 16 L 53 16 C 55 16 56 17 56 19 L 56 20 Z" fill={`url(#dock-min-${window.id})`} />
+              </svg>
               <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-3 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
                 {window.title}
               </div>

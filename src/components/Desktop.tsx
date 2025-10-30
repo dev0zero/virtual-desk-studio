@@ -26,10 +26,14 @@ export const Desktop = () => {
     minimizeWindow,
     focusWindow,
     updateWindowPosition,
+    updateWindowSize,
     copyFolder,
     cutFolder,
     pasteFolder,
     togglePin,
+    renameFolder,
+    maximizeWindow,
+    addFileToFolder,
   } = useDesktop();
 
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
@@ -107,6 +111,17 @@ export const Desktop = () => {
     toast.success(folder?.isPinned ? 'Открепить от дока' : 'Закреплено в доке');
   };
 
+  const handleRenameFolder = (folderId: string) => {
+    const folder = folders.find(f => f.id === folderId);
+    if (folder) {
+      const newName = prompt('Введите новое имя папки:', folder.name);
+      if (newName && newName !== folder.name) {
+        renameFolder(folderId, newName);
+        toast.success('Папка переименована');
+      }
+    }
+  };
+
   const pinnedFolders = folders.filter(f => f.isPinned);
   const currentFolder = contextMenu?.folderId ? folders.find(f => f.id === contextMenu.folderId) : undefined;
 
@@ -160,9 +175,12 @@ export const Desktop = () => {
             folder={windowFolder}
             onClose={() => closeWindow(window.id)}
             onMinimize={() => minimizeWindow(window.id)}
+            onMaximize={() => maximizeWindow(window.id)}
             onFocus={() => focusWindow(window.id)}
             onMove={(x, y) => updateWindowPosition(window.id, { x, y })}
+            onResize={(width, height) => updateWindowSize(window.id, { width, height })}
             onCreateSubfolder={handleCreateFolder}
+            onUploadFile={(file) => addFileToFolder(window.folderId, file)}
             onOpenSubfolder={openWindow}
             onSubfolderContextMenu={handleSubfolderContextMenu}
           />
@@ -194,6 +212,7 @@ export const Desktop = () => {
           onSort={!contextMenu.folderId ? handleSortFolders : undefined}
           onCopy={contextMenu.folderId ? () => handleCopyFolder(contextMenu.folderId!) : undefined}
           onCut={contextMenu.folderId ? () => handleCutFolder(contextMenu.folderId!) : undefined}
+          onRename={contextMenu.folderId ? () => handleRenameFolder(contextMenu.folderId!) : undefined}
           onDelete={contextMenu.folderId ? () => handleDeleteFolder(contextMenu.folderId!) : undefined}
           onPin={contextMenu.folderId ? () => handleTogglePin(contextMenu.folderId!) : undefined}
           isPinned={currentFolder?.isPinned}

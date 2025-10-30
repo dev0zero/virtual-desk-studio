@@ -1,5 +1,5 @@
 import { X, Minus, Maximize2 } from 'lucide-react';
-import { WindowState, Folder } from '@/types/desktop';
+import { WindowState, Folder, FileItem } from '@/types/desktop';
 import { useState, useRef, useEffect } from 'react';
 import { FolderContent } from './FolderContent';
 
@@ -8,9 +8,12 @@ interface WindowProps {
   folder: Folder;
   onClose: () => void;
   onMinimize: () => void;
+  onMaximize: () => void;
   onFocus: () => void;
   onMove: (x: number, y: number) => void;
+  onResize: (width: number, height: number) => void;
   onCreateSubfolder: (parentId: string, name: string) => void;
+  onUploadFile: (file: FileItem) => void;
   onOpenSubfolder: (subfolder: Folder) => void;
   onSubfolderContextMenu: (e: React.MouseEvent, folderId: string, subfolderId: string) => void;
 }
@@ -20,12 +23,16 @@ export const Window = ({
   folder,
   onClose,
   onMinimize,
+  onMaximize,
   onFocus,
   onMove,
+  onResize,
   onCreateSubfolder,
+  onUploadFile,
   onOpenSubfolder,
   onSubfolderContextMenu,
 }: WindowProps) => {
+  const [isResizing, setIsResizing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const windowRef = useRef<HTMLDivElement>(null);
@@ -95,6 +102,7 @@ export const Window = ({
             <Minus className="w-4 h-4 text-yellow-900" />
           </button>
           <button
+            onClick={onMaximize}
             className="window-button w-8 h-8 rounded-full bg-green-400 hover:bg-green-500 flex items-center justify-center transition-colors"
           >
             <Maximize2 className="w-4 h-4 text-green-900" />
@@ -117,8 +125,39 @@ export const Window = ({
           onSubfolderContextMenu={(e, subfolderId) =>
             onSubfolderContextMenu(e, folder.id, subfolderId)
           }
+          onUploadFile={onUploadFile}
         />
       </div>
+      
+      {/* Resize handle */}
+      {!window.isMaximized && (
+        <div
+          className="absolute bottom-0 right-0 w-4 h-4 cursor-nwse-resize"
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            setIsResizing(true);
+            const startX = e.clientX;
+            const startY = e.clientY;
+            const startW = window.size.width;
+            const startH = window.size.height;
+            
+            const handleMouseMove = (me: MouseEvent) => {
+              const newW = Math.max(400, startW + (me.clientX - startX));
+              const newH = Math.max(300, startH + (me.clientY - startY));
+              onResize(newW, newH);
+            };
+            
+            const handleMouseUp = () => {
+              setIsResizing(false);
+              document.removeEventListener('mousemove', handleMouseMove);
+              document.removeEventListener('mouseup', handleMouseUp);
+            };
+            
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+          }}
+        />
+      )}
     </div>
   );
 };

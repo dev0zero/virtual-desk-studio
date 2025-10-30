@@ -15,6 +15,7 @@ export interface Folder {
   isPinned?: boolean;
   parentId?: string;
   subFolders?: Folder[];
+  files?: FileItem[];
 }
 
 export interface WindowState {
@@ -24,7 +25,18 @@ export interface WindowState {
   position: Position;
   size: Size;
   isMinimized: boolean;
+  isMaximized: boolean;
+  originalSize?: Size;
+  originalPosition?: Position;
   zIndex: number;
+}
+
+export interface FileItem {
+  id: string;
+  name: string;
+  type: string;
+  size: number;
+  url?: string;
 }
 
 export interface ClipboardItem {
