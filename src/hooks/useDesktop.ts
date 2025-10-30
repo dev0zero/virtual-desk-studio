@@ -15,6 +15,7 @@ export const useDesktop = () => {
     { id: '1', name: 'Документы', position: { x: 50, y: 50 }, files: [] },
     { id: '2', name: 'Картинки', position: { x: 50, y: 180 }, files: exampleFiles.filter(f => f.type.startsWith('image')) },
     { id: '3', name: 'Музыка', position: { x: 50, y: 310 }, files: exampleFiles.filter(f => f.type.startsWith('audio')) },
+    { id: 'trash', name: 'Корзина', position: { x: 50, y: 440 }, files: [], isTrash: true, subFolders: [] },
   ]);
 
   const [windows, setWindows] = useState<WindowState[]>([]);
@@ -46,9 +47,26 @@ export const useDesktop = () => {
   }, []);
 
   const deleteFolder = useCallback((id: string) => {
-    setFolders(prev => prev.filter(f => f.id !== id));
+    const folder = folders.find(f => f.id === id);
+    if (folder?.isTrash) return; // Cannot delete trash
+    
+    // Move to trash instead of deleting
+    const trashFolder = folders.find(f => f.isTrash);
+    if (trashFolder) {
+      setFolders(prev =>
+        prev.map(f => {
+          if (f.isTrash) {
+            return {
+              ...f,
+              subFolders: [...(f.subFolders || []), { ...folder!, isDeleted: true }],
+            };
+          }
+          return f.id === id ? { ...f, isDeleted: true } : f;
+        }).filter(f => !f.isDeleted || f.isTrash)
+      );
+    }
     setWindows(prev => prev.filter(w => w.folderId !== id));
-  }, []);
+  }, [folders]);
 
   const updateFolderPosition = useCallback((id: string, position: Position) => {
     setFolders(prev =>
@@ -189,6 +207,40 @@ export const useDesktop = () => {
     );
   }, []);
 
+  const moveToFolder = useCallback((sourceFolderId: string, targetFolderId: string) => {
+    const sourceFolder = folders.find(f => f.id === sourceFolderId);
+    if (!sourceFolder || sourceFolderId === targetFolderId) return;
+
+    setFolders(prev => {
+      const updated = prev.map(f => {
+        if (f.id === targetFolderId) {
+          return {
+            ...f,
+            subFolders: [...(f.subFolders || []), { ...sourceFolder, parentId: targetFolderId }],
+          };
+        }
+        return f;
+      }).filter(f => f.id !== sourceFolderId);
+      return updated;
+    });
+    
+    setWindows(prev => prev.filter(w => w.folderId !== sourceFolderId));
+  }, [folders]);
+
+  const sortFolderContents = useCallback((folderId: string) => {
+    setFolders(prev =>
+      prev.map(f => {
+        if (f.id === folderId && f.subFolders) {
+          return {
+            ...f,
+            subFolders: [...f.subFolders].sort((a, b) => a.name.localeCompare(b.name)),
+          };
+        }
+        return f;
+      })
+    );
+  }, []);
+
   return {
     folders,
     windows,
@@ -209,5 +261,7 @@ export const useDesktop = () => {
     renameFolder,
     maximizeWindow,
     addFileToFolder,
+    moveToFolder,
+    sortFolderContents,
   };
 };

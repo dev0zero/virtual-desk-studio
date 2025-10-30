@@ -16,6 +16,8 @@ export interface Folder {
   parentId?: string;
   subFolders?: Folder[];
   files?: FileItem[];
+  isDeleted?: boolean;
+  isTrash?: boolean;
 }
 
 export interface WindowState {

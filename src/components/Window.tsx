@@ -16,6 +16,7 @@ interface WindowProps {
   onUploadFile: (file: FileItem) => void;
   onOpenSubfolder: (subfolder: Folder) => void;
   onSubfolderContextMenu: (e: React.MouseEvent, folderId: string, subfolderId: string) => void;
+  onSortContents: () => void;
 }
 
 export const Window = ({
@@ -31,6 +32,7 @@ export const Window = ({
   onUploadFile,
   onOpenSubfolder,
   onSubfolderContextMenu,
+  onSortContents,
 }: WindowProps) => {
   const [isResizing, setIsResizing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -97,21 +99,21 @@ export const Window = ({
         <div className="flex items-center gap-2">
           <button
             onClick={onMinimize}
-            className="window-button w-8 h-8 rounded-full bg-yellow-400 hover:bg-yellow-500 flex items-center justify-center transition-colors"
+            className="window-button w-6 h-6 rounded-full bg-yellow-400 hover:bg-yellow-500 flex items-center justify-center transition-colors"
           >
-            <Minus className="w-4 h-4 text-yellow-900" />
+            <Minus className="w-3 h-3 text-yellow-900" />
           </button>
           <button
             onClick={onMaximize}
-            className="window-button w-8 h-8 rounded-full bg-green-400 hover:bg-green-500 flex items-center justify-center transition-colors"
+            className="window-button w-6 h-6 rounded-full bg-green-400 hover:bg-green-500 flex items-center justify-center transition-colors"
           >
-            <Maximize2 className="w-4 h-4 text-green-900" />
+            <Maximize2 className="w-3 h-3 text-green-900" />
           </button>
           <button
             onClick={onClose}
-            className="window-button w-8 h-8 rounded-full bg-red-400 hover:bg-red-500 flex items-center justify-center transition-colors"
+            className="window-button w-6 h-6 rounded-full bg-red-400 hover:bg-red-500 flex items-center justify-center transition-colors"
           >
-            <X className="w-4 h-4 text-red-900" />
+            <X className="w-3 h-3 text-red-900" />
           </button>
         </div>
       </div>
@@ -126,6 +128,7 @@ export const Window = ({
             onSubfolderContextMenu(e, folder.id, subfolderId)
           }
           onUploadFile={onUploadFile}
+          onSort={onSortContents}
         />
       </div>
       

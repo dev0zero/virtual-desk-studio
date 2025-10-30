@@ -8,6 +8,7 @@ interface FolderIconProps {
   onContextMenu: (e: React.MouseEvent) => void;
   onDrag: (e: React.DragEvent) => void;
   onDragEnd: (position: { x: number; y: number }) => void;
+  onDrop: (targetId: string) => void;
 }
 
 export const FolderIcon = ({
@@ -16,9 +17,11 @@ export const FolderIcon = ({
   onContextMenu,
   onDrag,
   onDragEnd,
+  onDrop,
 }: FolderIconProps) => {
   const [isDragging, setIsDragging] = useState(false);
   const [tempPosition, setTempPosition] = useState(folder.position);
+  const [isDropTarget, setIsDropTarget] = useState(false);
   const clickTimeoutRef = useRef<NodeJS.Timeout>();
   const dragOffsetRef = useRef({ x: 0, y: 0 });
 
@@ -52,7 +55,7 @@ export const FolderIcon = ({
     <div
       className={`absolute desktop-icon cursor-move select-none transition-opacity ${
         isDragging ? 'opacity-70 z-50' : 'opacity-100'
-      }`}
+      } ${isDropTarget ? 'scale-110' : ''}`}
       style={{
         left: `${tempPosition.x}px`,
         top: `${tempPosition.y}px`,
@@ -68,14 +71,14 @@ export const FolderIcon = ({
           x: e.clientX - rect.left,
           y: e.clientY - rect.top,
         };
-        // Создаем невидимый элемент для drag image
+        e.dataTransfer.setData('folderId', folder.id);
         const dragImage = new Image();
         dragImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
         e.dataTransfer.setDragImage(dragImage, 0, 0);
         e.dataTransfer.effectAllowed = 'move';
       }}
       onDrag={(e) => {
-        if (e.clientX === 0 && e.clientY === 0) return; // Игнорируем последнее событие drag
+        if (e.clientX === 0 && e.clientY === 0) return;
         
         const newX = Math.max(0, Math.min(e.clientX - dragOffsetRef.current.x, window.innerWidth - 120));
         const newY = Math.max(0, Math.min(e.clientY - dragOffsetRef.current.y, window.innerHeight - 150));
@@ -92,6 +95,23 @@ export const FolderIcon = ({
         
         setTempPosition({ x: newX, y: newY });
         onDragEnd({ x: newX, y: newY });
+      }}
+      onDragOver={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDropTarget(true);
+      }}
+      onDragLeave={() => {
+        setIsDropTarget(false);
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDropTarget(false);
+        const sourceFolderId = e.dataTransfer.getData('folderId');
+        if (sourceFolderId && sourceFolderId !== folder.id) {
+          onDrop(folder.id);
+        }
       }}
     >
       <div className="flex flex-col items-center gap-2 p-3 rounded-lg hover:bg-white/20 dark:hover:bg-black/20 transition-colors pointer-events-none">

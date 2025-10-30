@@ -34,6 +34,8 @@ export const Desktop = () => {
     renameFolder,
     maximizeWindow,
     addFileToFolder,
+    moveToFolder,
+    sortFolderContents,
   } = useDesktop();
 
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
@@ -82,9 +84,13 @@ export const Desktop = () => {
 
   const handleDeleteFolder = (folderId: string) => {
     const folder = folders.find(f => f.id === folderId);
-    if (folder && confirm(`Удалить папку "${folder.name}"?`)) {
+    if (folder?.isTrash) {
+      toast.error('Невозможно удалить корзину');
+      return;
+    }
+    if (folder) {
       deleteFolder(folderId);
-      toast.success('Папка удалена');
+      toast.success('Папка перемещена в корзину');
     }
   };
 
@@ -146,6 +152,12 @@ export const Desktop = () => {
     setContextMenu({ x: e.clientX, y: e.clientY, folderId: subfolderId });
   };
 
+  const handleFolderDrop = (targetFolderId: string, sourceFolderId: string) => {
+    if (targetFolderId === sourceFolderId) return;
+    moveToFolder(sourceFolderId, targetFolderId);
+    toast.success('Папка перемещена');
+  };
+
   return (
     <div
       className="w-screen h-screen bg-gradient-to-br from-[hsl(var(--desktop-bg-start))] to-[hsl(var(--desktop-bg-end))] relative overflow-hidden"
@@ -160,6 +172,7 @@ export const Desktop = () => {
           onContextMenu={(e) => handleFolderContextMenu(e, folder.id)}
           onDrag={(e) => handleDrag(folder.id, e)}
           onDragEnd={(pos) => handleDragEnd(folder.id, pos)}
+          onDrop={(targetId) => handleFolderDrop(targetId, folder.id)}
         />
       ))}
 
@@ -183,6 +196,7 @@ export const Desktop = () => {
             onUploadFile={(file) => addFileToFolder(window.folderId, file)}
             onOpenSubfolder={openWindow}
             onSubfolderContextMenu={handleSubfolderContextMenu}
+            onSortContents={() => sortFolderContents(window.folderId)}
           />
         );
       })}
@@ -191,6 +205,7 @@ export const Desktop = () => {
       <Dock
         pinnedFolders={pinnedFolders}
         windows={windows}
+        allFolders={folders}
         onFolderClick={openWindow}
         onWindowClick={(windowId) => {
           const window = windows.find(w => w.id === windowId);
