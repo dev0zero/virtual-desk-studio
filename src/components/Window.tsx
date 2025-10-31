@@ -34,6 +34,7 @@ export const Window = ({
   onOpenSubfolder,
   onSubfolderContextMenu,
   onSortContents,
+  onDropFolder,
 }: WindowProps) => {
   const [isResizing, setIsResizing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
