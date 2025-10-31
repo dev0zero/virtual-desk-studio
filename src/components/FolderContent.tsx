@@ -53,7 +53,7 @@ export const FolderContent = ({
   return (
     <div className="h-full flex flex-col">
       <div className="p-4 border-b border-border flex items-center justify-between bg-muted/50">
-        <h2 className="font-semibold text-foreground">Содержимое папки</h2>
+        {/* Заголовок удалён по запросу: без текста под кнопками */}
       </div>
 
       <div 
@@ -86,6 +86,15 @@ export const FolderContent = ({
                 onDoubleClick={() => onOpenSubfolder(subfolder)}
                 onContextMenu={(e) => onSubfolderContextMenu(e, subfolder.id)}
                 className="flex flex-col items-center gap-3 p-4 rounded-xl hover:bg-accent/50 transition-colors group"
+                draggable
+                onDragStart={(e) => {
+                  e.dataTransfer.setData('source', 'window-subfolder');
+                  e.dataTransfer.setData('folderId', subfolder.id);
+                  const dragImage = new Image();
+                  dragImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+                  e.dataTransfer.setDragImage(dragImage, 0, 0);
+                  e.dataTransfer.effectAllowed = 'move';
+                }}
               >
                 <div className="w-20 h-20 flex items-center justify-center bg-gradient-to-br from-primary to-accent rounded-2xl shadow-md group-hover:scale-105 transition-transform">
                   <FolderLucide className="w-10 h-10 text-white" />
@@ -98,7 +107,7 @@ export const FolderContent = ({
           </div>
         )}
         {isDragOver && (
-          <div className="absolute inset-0 bg-primary/20 border-4 border-dashed border-primary flex items-center justify-center">
+          <div className="absolute inset-0 bg-primary/20 border-4 border-dashed border-primary flex items-center justify-center pointer-events-none">
             <p className="text-2xl font-bold text-foreground">Перетащите файлы сюда</p>
           </div>
         )}

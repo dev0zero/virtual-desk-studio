@@ -24,6 +24,7 @@ export const Desktop = () => {
     openWindow,
     closeWindow,
     minimizeWindow,
+    restoreWindow,
     focusWindow,
     updateWindowPosition,
     updateWindowSize,
@@ -36,6 +37,8 @@ export const Desktop = () => {
     addFileToFolder,
     moveToFolder,
     sortFolderContents,
+    moveFolderByIdToFolder,
+    moveFolderToDesktop,
   } = useDesktop();
 
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
@@ -158,10 +161,30 @@ export const Desktop = () => {
     toast.success('Папка перемещена');
   };
 
+  const handleDesktopDragOver = (e: React.DragEvent) => {
+    // Allow dropping folders dragged from window contents
+    if (e.dataTransfer.getData('source') === 'window-subfolder' && e.dataTransfer.getData('folderId')) {
+      e.preventDefault();
+    }
+  };
+
+  const handleDesktopDrop = (e: React.DragEvent) => {
+    if (e.dataTransfer.getData('source') === 'window-subfolder') {
+      e.preventDefault();
+      const sourceFolderId = e.dataTransfer.getData('folderId');
+      if (sourceFolderId) {
+        moveFolderToDesktop(sourceFolderId, { x: e.clientX, y: e.clientY });
+        toast.success('Папка перенесена на рабочий стол');
+      }
+    }
+  };
+
   return (
     <div
       className="w-screen h-screen bg-gradient-to-br from-[hsl(var(--desktop-bg-start))] to-[hsl(var(--desktop-bg-end))] relative overflow-hidden"
       onContextMenu={handleDesktopContextMenu}
+      onDragOver={handleDesktopDragOver}
+      onDrop={handleDesktopDrop}
     >
       {/* Desktop Icons */}
       {folders.map(folder => (
@@ -197,6 +220,12 @@ export const Desktop = () => {
             onOpenSubfolder={openWindow}
             onSubfolderContextMenu={handleSubfolderContextMenu}
             onSortContents={() => sortFolderContents(window.folderId)}
+            onDropFolder={(sourceFolderId) => {
+              if (sourceFolderId !== window.folderId) {
+                moveFolderByIdToFolder(sourceFolderId, window.folderId);
+                toast.success('Папка перемещена');
+              }
+            }}
           />
         );
       })}
@@ -208,9 +237,11 @@ export const Desktop = () => {
         allFolders={folders}
         onFolderClick={openWindow}
         onWindowClick={(windowId) => {
-          const window = windows.find(w => w.id === windowId);
-          if (window) {
-            minimizeWindow(windowId);
+          const w = windows.find(win => win.id === windowId);
+          if (!w) return;
+          if (w.isMinimized) {
+            restoreWindow(windowId);
+          } else {
             focusWindow(windowId);
           }
         }}

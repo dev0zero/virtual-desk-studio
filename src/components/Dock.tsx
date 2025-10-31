@@ -17,7 +17,7 @@ export const Dock = ({ pinnedFolders, windows, onFolderClick, onWindowClick, all
 
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
-      <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-2xl rounded-2xl px-4 py-3 shadow-2xl border border-white/20 dark:border-gray-700/20">
+      <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-2xl rounded-2xl px-4 py-3 shadow-2xl border border-white/20 dark:border-gray-700/20 select-none">
         <div className="flex items-center gap-3">
           {/* Trash Folder */}
           {trashFolder && (
@@ -35,9 +35,6 @@ export const Dock = ({ pinnedFolders, windows, onFolderClick, onWindowClick, all
                 <path d="M 8 20 L 8 52 C 8 54 9 56 11 56 L 53 56 C 55 56 56 54 56 52 L 56 24 C 56 22 55 20 53 20 Z" fill="url(#dock-trash)" opacity="0.85" />
                 <path d="M 8 20 L 8 14 C 8 12 9 10 11 10 L 26 10 L 30 16 L 53 16 C 55 16 56 17 56 19 L 56 20 Z" fill="url(#dock-trash)" />
               </svg>
-              {activeWindows.some(w => w.folderId === trashFolder.id) && (
-                <div className="absolute -bottom-1 w-1 h-1 bg-white rounded-full" />
-              )}
               <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-3 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
                 {trashFolder.name}
               </div>

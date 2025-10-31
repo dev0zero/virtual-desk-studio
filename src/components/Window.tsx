@@ -17,6 +17,7 @@ interface WindowProps {
   onOpenSubfolder: (subfolder: Folder) => void;
   onSubfolderContextMenu: (e: React.MouseEvent, folderId: string, subfolderId: string) => void;
   onSortContents: () => void;
+  onDropFolder: (sourceFolderId: string) => void;
 }
 
 export const Window = ({
@@ -75,7 +76,10 @@ export const Window = ({
     onFocus();
   };
 
-  if (window.isMinimized) return null;
+  if (window.isMinimized) {
+    // Window hidden but still tracked for Dock
+    return null;
+  }
 
   return (
     <div
@@ -119,7 +123,20 @@ export const Window = ({
       </div>
 
       {/* Content */}
-      <div className="h-[calc(100%-3rem)] overflow-hidden bg-white/50 dark:bg-gray-900/50">
+      <div
+        className="h-[calc(100%-3rem)] overflow-hidden bg-white/50 dark:bg-gray-900/50"
+        onDragOver={(e) => {
+          const fid = e.dataTransfer.getData('folderId');
+          if (fid) e.preventDefault();
+        }}
+        onDrop={(e) => {
+          const fid = e.dataTransfer.getData('folderId');
+          if (fid) {
+            e.preventDefault();
+            onDropFolder(fid);
+          }
+        }}
+      >
         <FolderContent
           folder={folder}
           onCreateSubfolder={(name) => onCreateSubfolder(folder.id, name)}

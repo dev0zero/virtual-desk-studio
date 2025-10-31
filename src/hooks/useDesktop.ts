@@ -400,6 +400,42 @@ export const useDesktop = () => {
     }
   }, [clipboard, folders, moveFolderByIdToFolder]);
 
+  // Move a (sub)folder out to desktop as a top-level icon at a given position
+  const moveFolderToDesktop = useCallback((sourceFolderId: string, position: Position) => {
+    setFolders(prev => {
+      let extracted: Folder | undefined;
+
+      // Remove from current location (either top-level or nested)
+      const removed = prev.reduce<Folder[]>((acc, f) => {
+        if (f.id === sourceFolderId) {
+          extracted = { ...f };
+          return acc; // skip adding this top-level folder
+        }
+        if (f.subFolders) {
+          const idx = f.subFolders.findIndex(sf => sf.id === sourceFolderId);
+          if (idx !== -1) {
+            extracted = { ...f.subFolders[idx] };
+            const newSubs = [...f.subFolders];
+            newSubs.splice(idx, 1);
+            acc.push({ ...f, subFolders: newSubs });
+            return acc;
+          }
+        }
+        acc.push(f);
+        return acc;
+      }, []);
+
+      if (!extracted) return prev; // nothing to move
+
+      // Reset parentId and set new desktop position
+      const toTopLevel: Folder = { ...extracted, parentId: undefined, position, subFolders: extracted.subFolders || [], files: extracted.files || [] };
+
+      return [...removed, toTopLevel];
+    });
+    // Close any window tied to the moved folder (since its id stays the same, no need to update windows)
+    setWindows(prev => prev);
+  }, []);
+
   return {
     folders,
     windows,
@@ -410,6 +446,7 @@ export const useDesktop = () => {
     openWindow,
     closeWindow,
     minimizeWindow,
+    restoreWindow,
     focusWindow,
     updateWindowPosition,
     updateWindowSize,
@@ -421,6 +458,8 @@ export const useDesktop = () => {
     maximizeWindow,
     addFileToFolder,
     moveToFolder,
+    moveFolderByIdToFolder,
+    moveFolderToDesktop,
     sortFolderContents,
   };
 };
