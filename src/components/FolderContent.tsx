@@ -85,7 +85,7 @@ export const FolderContent = ({
                 key={subfolder.id}
                 onDoubleClick={() => onOpenSubfolder(subfolder)}
                 onContextMenu={(e) => onSubfolderContextMenu(e, subfolder.id)}
-                className="flex flex-col items-center gap-3 p-4 rounded-xl hover:bg-accent/50 transition-colors group"
+                className="flex flex-col items-center gap-3 p-4 rounded-xl hover:bg-accent/50 transition-colors group cursor-pointer"
                 draggable
                 onDragStart={(e) => {
                   e.dataTransfer.setData('source', 'window-subfolder');

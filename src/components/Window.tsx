@@ -127,12 +127,16 @@ export const Window = ({
       <div
         className="h-[calc(100%-3rem)] overflow-hidden bg-white/50 dark:bg-gray-900/50"
         onDragOver={(e) => {
-          const fid = e.dataTransfer.getData('folderId');
-          if (fid) e.preventDefault();
+          // Check if dragging a folder (by checking types or items)
+          if (e.dataTransfer.types.includes('source') || e.dataTransfer.types.includes('folderid')) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+          }
         }}
         onDrop={(e) => {
+          const source = e.dataTransfer.getData('source');
           const fid = e.dataTransfer.getData('folderId');
-          if (fid) {
+          if (source === 'window-subfolder' && fid) {
             e.preventDefault();
             onDropFolder(fid);
           }
