@@ -1,4 +1,4 @@
-import { Copy, Scissors, Trash2, Plus, Pin, PinOff, Clipboard, ArrowDownAZ, Edit } from 'lucide-react';
+import { Copy, Scissors, Trash2, Plus, Pin, PinOff, Clipboard, ArrowDownAZ, Edit, FolderOpen } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 
 interface ContextMenuProps {
@@ -13,6 +13,8 @@ interface ContextMenuProps {
   onSort?: () => void;
   onPin?: () => void;
   onRename?: () => void;
+  onOpen?: () => void;
+  onNewFile?: () => void;
   isPinned?: boolean;
 }
 
@@ -28,6 +30,8 @@ export const ContextMenu = ({
   onSort,
   onPin,
   onRename,
+  onOpen,
+  onNewFile,
   isPinned,
 }: ContextMenuProps) => {
   const menuRef = useRef<HTMLDivElement>(null);
@@ -45,8 +49,10 @@ export const ContextMenu = ({
 
   const menuItems = [
     onNew && { icon: Plus, label: 'Создать папку', action: onNew },
+    onNewFile && { icon: Plus, label: 'Создать текстовый файл', action: onNewFile },
     onPaste && { icon: Clipboard, label: 'Вставить', action: onPaste },
     onSort && { icon: ArrowDownAZ, label: 'Упорядочить по имени', action: onSort },
+    onOpen && { icon: FolderOpen, label: 'Открыть', action: onOpen },
     onCopy && { icon: Copy, label: 'Копировать', action: onCopy },
     onCut && { icon: Scissors, label: 'Вырезать', action: onCut },
     onRename && { icon: Edit, label: 'Переименовать', action: onRename },

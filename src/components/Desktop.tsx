@@ -41,6 +41,11 @@ export const Desktop = () => {
     moveFolderToDesktop,
     updateSubfolderPosition,
     updateFilePosition,
+    createTextFile,
+    deleteFile,
+    renameFile,
+    deleteSubfolder,
+    renameSubfolder,
   } = useDesktop();
 
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
@@ -230,6 +235,11 @@ export const Desktop = () => {
             }}
             onUpdateSubfolderPosition={updateSubfolderPosition}
             onUpdateFilePosition={updateFilePosition}
+            onCreateTextFile={createTextFile}
+            onDeleteFile={deleteFile}
+            onRenameFile={renameFile}
+            onDeleteSubfolder={deleteSubfolder}
+            onRenameSubfolder={renameSubfolder}
           />
         );
       })}

@@ -500,6 +500,147 @@ export const useDesktop = () => {
     );
   }, []);
 
+  const createTextFile = useCallback((folderId: string, fileName: string, position: Position) => {
+    const newFile: FileItem = {
+      id: Date.now().toString(),
+      name: fileName,
+      type: 'text/plain',
+      size: 0,
+      position,
+    };
+    setFolders(prev =>
+      prev.map(f => {
+        if (f.id === folderId) {
+          return { ...f, files: [...(f.files || []), newFile] };
+        }
+        if (f.subFolders) {
+          return {
+            ...f,
+            subFolders: f.subFolders.map(sf =>
+              sf.id === folderId ? { ...sf, files: [...(sf.files || []), newFile] } : sf
+            ),
+          };
+        }
+        return f;
+      })
+    );
+  }, []);
+
+  const deleteFile = useCallback((folderId: string, fileId: string) => {
+    setFolders(prev =>
+      prev.map(f => {
+        if (f.id === folderId) {
+          return { ...f, files: (f.files || []).filter(file => file.id !== fileId) };
+        }
+        if (f.subFolders) {
+          return {
+            ...f,
+            subFolders: f.subFolders.map(sf =>
+              sf.id === folderId ? { ...sf, files: (sf.files || []).filter(file => file.id !== fileId) } : sf
+            ),
+          };
+        }
+        return f;
+      })
+    );
+  }, []);
+
+  const renameFile = useCallback((folderId: string, fileId: string, newName: string) => {
+    setFolders(prev =>
+      prev.map(f => {
+        if (f.id === folderId && f.files) {
+          return {
+            ...f,
+            files: f.files.map(file =>
+              file.id === fileId ? { ...file, name: newName } : file
+            ),
+          };
+        }
+        if (f.subFolders) {
+          return {
+            ...f,
+            subFolders: f.subFolders.map(sf => {
+              if (sf.id === folderId && sf.files) {
+                return {
+                  ...sf,
+                  files: sf.files.map(file =>
+                    file.id === fileId ? { ...file, name: newName } : file
+                  ),
+                };
+              }
+              return sf;
+            }),
+          };
+        }
+        return f;
+      })
+    );
+  }, []);
+
+  const deleteSubfolder = useCallback((parentId: string, subfolderId: string) => {
+    setFolders(prev =>
+      prev.map(f => {
+        if (f.id === parentId && f.subFolders) {
+          return {
+            ...f,
+            subFolders: f.subFolders.filter(sf => sf.id !== subfolderId),
+          };
+        }
+        if (f.subFolders) {
+          return {
+            ...f,
+            subFolders: f.subFolders.map(sf => {
+              if (sf.id === parentId && sf.subFolders) {
+                return {
+                  ...sf,
+                  subFolders: sf.subFolders.filter(ssf => ssf.id !== subfolderId),
+                };
+              }
+              return sf;
+            }),
+          };
+        }
+        return f;
+      })
+    );
+    setWindows(prev => prev.filter(w => w.folderId !== subfolderId));
+  }, []);
+
+  const renameSubfolder = useCallback((parentId: string, subfolderId: string, newName: string) => {
+    setFolders(prev =>
+      prev.map(f => {
+        if (f.id === parentId && f.subFolders) {
+          return {
+            ...f,
+            subFolders: f.subFolders.map(sf =>
+              sf.id === subfolderId ? { ...sf, name: newName } : sf
+            ),
+          };
+        }
+        if (f.subFolders) {
+          return {
+            ...f,
+            subFolders: f.subFolders.map(sf => {
+              if (sf.id === parentId && sf.subFolders) {
+                return {
+                  ...sf,
+                  subFolders: sf.subFolders.map(ssf =>
+                    ssf.id === subfolderId ? { ...ssf, name: newName } : ssf
+                  ),
+                };
+              }
+              return sf;
+            }),
+          };
+        }
+        return f;
+      })
+    );
+    setWindows(prev =>
+      prev.map(w => (w.folderId === subfolderId ? { ...w, title: newName } : w))
+    );
+  }, []);
+
   return {
     folders,
     windows,
@@ -527,5 +668,10 @@ export const useDesktop = () => {
     sortFolderContents,
     updateSubfolderPosition,
     updateFilePosition,
+    createTextFile,
+    deleteFile,
+    renameFile,
+    deleteSubfolder,
+    renameSubfolder,
   };
 };

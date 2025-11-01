@@ -20,6 +20,11 @@ interface WindowProps {
   onDropFolder: (sourceFolderId: string) => void;
   onUpdateSubfolderPosition: (folderId: string, subfolderId: string, position: { x: number; y: number }) => void;
   onUpdateFilePosition: (folderId: string, fileId: string, position: { x: number; y: number }) => void;
+  onCreateTextFile: (folderId: string, fileName: string, position: { x: number; y: number }) => void;
+  onDeleteFile: (folderId: string, fileId: string) => void;
+  onRenameFile: (folderId: string, fileId: string, newName: string) => void;
+  onDeleteSubfolder: (parentId: string, subfolderId: string) => void;
+  onRenameSubfolder: (parentId: string, subfolderId: string, newName: string) => void;
 }
 
 export const Window = ({
@@ -39,6 +44,11 @@ export const Window = ({
   onDropFolder,
   onUpdateSubfolderPosition,
   onUpdateFilePosition,
+  onCreateTextFile,
+  onDeleteFile,
+  onRenameFile,
+  onDeleteSubfolder,
+  onRenameSubfolder,
 }: WindowProps) => {
   const [isResizing, setIsResizing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -160,6 +170,15 @@ export const Window = ({
           }
           onUpdateFilePosition={(fileId, position) =>
             onUpdateFilePosition(folder.id, fileId, position)
+          }
+          onCreateTextFile={(fileName, position) =>
+            onCreateTextFile(folder.id, fileName, position)
+          }
+          onDeleteFile={(fileId) => onDeleteFile(folder.id, fileId)}
+          onRenameFile={(fileId, newName) => onRenameFile(folder.id, fileId, newName)}
+          onDeleteSubfolder={(subfolderId) => onDeleteSubfolder(folder.id, subfolderId)}
+          onRenameSubfolder={(subfolderId, newName) =>
+            onRenameSubfolder(folder.id, subfolderId, newName)
           }
         />
       </div>

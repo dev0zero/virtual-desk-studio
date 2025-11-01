@@ -12,6 +12,11 @@ interface FolderContentProps {
   onSort: () => void;
   onUpdateSubfolderPosition: (subfolderId: string, position: Position) => void;
   onUpdateFilePosition: (fileId: string, position: Position) => void;
+  onCreateTextFile: (fileName: string, position: Position) => void;
+  onDeleteFile: (fileId: string) => void;
+  onRenameFile: (fileId: string, newName: string) => void;
+  onDeleteSubfolder: (subfolderId: string) => void;
+  onRenameSubfolder: (subfolderId: string, newName: string) => void;
 }
 
 export const FolderContent = ({
@@ -23,9 +28,14 @@ export const FolderContent = ({
   onSort,
   onUpdateSubfolderPosition,
   onUpdateFilePosition,
+  onCreateTextFile,
+  onDeleteFile,
+  onRenameFile,
+  onDeleteSubfolder,
+  onRenameSubfolder,
 }: FolderContentProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; itemType?: 'file' | 'folder'; itemId?: string } | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [draggingItem, setDraggingItem] = useState<{ type: 'folder' | 'file'; id: string; offset: Position } | null>(null);
 
@@ -40,6 +50,70 @@ export const FolderContent = ({
     e.preventDefault();
     e.stopPropagation();
     setContextMenu({ x: e.clientX, y: e.clientY });
+  };
+
+  const handleFileContextMenu = (e: React.MouseEvent, fileId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setContextMenu({ x: e.clientX, y: e.clientY, itemType: 'file', itemId: fileId });
+  };
+
+  const handleSubfolderContextMenuLocal = (e: React.MouseEvent, subfolderId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setContextMenu({ x: e.clientX, y: e.clientY, itemType: 'folder', itemId: subfolderId });
+  };
+
+  const handleCreateTextFile = () => {
+    const name = prompt('Введите имя файла (с расширением .txt):');
+    if (name) {
+      onCreateTextFile(name.endsWith('.txt') ? name : `${name}.txt`, { x: 30, y: 30 });
+    }
+  };
+
+  const handleDeleteItem = () => {
+    if (!contextMenu?.itemId) return;
+    if (contextMenu.itemType === 'file') {
+      if (confirm('Удалить этот файл?')) {
+        onDeleteFile(contextMenu.itemId);
+      }
+    } else if (contextMenu.itemType === 'folder') {
+      if (confirm('Удалить эту папку?')) {
+        onDeleteSubfolder(contextMenu.itemId);
+      }
+    }
+  };
+
+  const handleRenameItem = () => {
+    if (!contextMenu?.itemId) return;
+    if (contextMenu.itemType === 'file') {
+      const file = files.find(f => f.id === contextMenu.itemId);
+      if (file) {
+        const newName = prompt('Введите новое имя файла:', file.name);
+        if (newName && newName !== file.name) {
+          onRenameFile(contextMenu.itemId, newName);
+        }
+      }
+    } else if (contextMenu.itemType === 'folder') {
+      const subfolder = subFolders.find(sf => sf.id === contextMenu.itemId);
+      if (subfolder) {
+        const newName = prompt('Введите новое имя папки:', subfolder.name);
+        if (newName && newName !== subfolder.name) {
+          onRenameSubfolder(contextMenu.itemId, newName);
+        }
+      }
+    }
+  };
+
+  const handleOpenItem = () => {
+    if (!contextMenu?.itemId) return;
+    if (contextMenu.itemType === 'folder') {
+      const subfolder = subFolders.find(sf => sf.id === contextMenu.itemId);
+      if (subfolder) {
+        onOpenSubfolder(subfolder);
+      }
+    }
+    // Для файла можно добавить логику открытия в будущем
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -131,13 +205,14 @@ export const FolderContent = ({
             {files.map((file) => (
               <div
                 key={file.id}
-                className="absolute flex flex-col items-center gap-3 p-4 rounded-xl bg-muted/30 cursor-pointer select-none"
+                className="absolute flex flex-col items-center gap-3 p-4 rounded-xl bg-muted/30 hover:bg-accent/50 transition-colors cursor-pointer select-none"
                 style={{
                   left: `${file.position?.x || 30}px`,
                   top: `${file.position?.y || 30}px`,
                   width: '100px',
                 }}
                 onMouseDown={(e) => handleItemMouseDown(e, 'file', file.id, file.position || { x: 30, y: 30 })}
+                onContextMenu={(e) => handleFileContextMenu(e, file.id)}
               >
                 <File className="w-10 h-10 text-muted-foreground" />
                 <span className="text-sm font-medium text-foreground text-center max-w-[100px] truncate">{file.name}</span>
@@ -153,7 +228,7 @@ export const FolderContent = ({
                   width: '100px',
                 }}
                 onDoubleClick={() => onOpenSubfolder(subfolder)}
-                onContextMenu={(e) => onSubfolderContextMenu(e, subfolder.id)}
+                onContextMenu={(e) => handleSubfolderContextMenuLocal(e, subfolder.id)}
                 onMouseDown={(e) => handleItemMouseDown(e, 'folder', subfolder.id, subfolder.position || { x: 30, y: 30 })}
                 draggable
                 onDragStart={(e) => {
@@ -187,8 +262,12 @@ export const FolderContent = ({
           x={contextMenu.x}
           y={contextMenu.y}
           onClose={() => setContextMenu(null)}
-          onNew={handleCreateFolder}
-          onSort={onSort}
+          onNew={!contextMenu.itemId ? handleCreateFolder : undefined}
+          onNewFile={!contextMenu.itemId ? handleCreateTextFile : undefined}
+          onSort={!contextMenu.itemId ? onSort : undefined}
+          onOpen={contextMenu.itemId ? handleOpenItem : undefined}
+          onDelete={contextMenu.itemId ? handleDeleteItem : undefined}
+          onRename={contextMenu.itemId ? handleRenameItem : undefined}
         />
       )}
     </div>
