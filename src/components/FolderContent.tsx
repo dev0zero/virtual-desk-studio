@@ -1,6 +1,6 @@
 import { Folder as FolderLucide, File } from 'lucide-react';
-import { Folder, FileItem } from '@/types/desktop';
-import { useRef, useState } from 'react';
+import { Folder, FileItem, Position } from '@/types/desktop';
+import { useRef, useState, useEffect } from 'react';
 import { ContextMenu } from './ContextMenu';
 
 interface FolderContentProps {
@@ -10,6 +10,8 @@ interface FolderContentProps {
   onSubfolderContextMenu: (e: React.MouseEvent, subfolderId: string) => void;
   onUploadFile: (file: FileItem) => void;
   onSort: () => void;
+  onUpdateSubfolderPosition: (subfolderId: string, position: Position) => void;
+  onUpdateFilePosition: (fileId: string, position: Position) => void;
 }
 
 export const FolderContent = ({
@@ -19,10 +21,13 @@ export const FolderContent = ({
   onSubfolderContextMenu,
   onUploadFile,
   onSort,
+  onUpdateSubfolderPosition,
+  onUpdateFilePosition,
 }: FolderContentProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [draggingItem, setDraggingItem] = useState<{ type: 'folder' | 'file'; id: string; offset: Position } | null>(null);
 
   const handleCreateFolder = () => {
     const name = prompt('Введите имя новой папки:');
@@ -43,9 +48,57 @@ export const FolderContent = ({
     
     const files = Array.from(e.dataTransfer.files);
     files.forEach(file => {
-      onUploadFile({ id: Date.now().toString(), name: file.name, type: file.type, size: file.size });
+      onUploadFile({ id: Date.now().toString(), name: file.name, type: file.type, size: file.size, position: { x: 30, y: 30 } });
     });
   };
+
+  const handleItemMouseDown = (e: React.MouseEvent, type: 'folder' | 'file', id: string, currentPos: Position) => {
+    if (e.button !== 0) return; // Only left mouse button
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    setDraggingItem({
+      type,
+      id,
+      offset: {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      },
+    });
+  };
+
+  // Attach mouse event listeners
+  useEffect(() => {
+    if (!draggingItem) return;
+
+    const handleMove = (e: MouseEvent) => {
+      const container = document.getElementById(`folder-content-${folder.id}`);
+      if (!container) return;
+      
+      const containerRect = container.getBoundingClientRect();
+      const newX = Math.max(0, Math.min(containerRect.width - 120, e.clientX - containerRect.left - draggingItem.offset.x));
+      const newY = Math.max(0, Math.min(containerRect.height - 120, e.clientY - containerRect.top - draggingItem.offset.y));
+      
+      if (draggingItem.type === 'folder') {
+        onUpdateSubfolderPosition(draggingItem.id, { x: newX, y: newY });
+      } else {
+        onUpdateFilePosition(draggingItem.id, { x: newX, y: newY });
+      }
+    };
+
+    const handleUp = () => {
+      setDraggingItem(null);
+    };
+
+    document.addEventListener('mousemove', handleMove);
+    document.addEventListener('mouseup', handleUp);
+    
+    return () => {
+      document.removeEventListener('mousemove', handleMove);
+      document.removeEventListener('mouseup', handleUp);
+    };
+  }, [draggingItem, folder.id, onUpdateSubfolderPosition, onUpdateFilePosition]);
 
   const subFolders = folder.subFolders || [];
   const files = folder.files || [];
@@ -57,7 +110,8 @@ export const FolderContent = ({
       </div>
 
       <div 
-        className="flex-1 overflow-auto p-6"
+        id={`folder-content-${folder.id}`}
+        className="flex-1 overflow-hidden relative"
         onContextMenu={handleContextMenu}
         onDragOver={(e) => {
           e.preventDefault();
@@ -73,19 +127,34 @@ export const FolderContent = ({
             <p className="text-sm">Создайте новую папку, чтобы организовать файлы</p>
           </div>
         ) : (
-          <div className="grid grid-cols-4 gap-6">
+          <>
             {files.map((file) => (
-              <div key={file.id} className="flex flex-col items-center gap-3 p-4 rounded-xl bg-muted/30">
+              <div
+                key={file.id}
+                className="absolute flex flex-col items-center gap-3 p-4 rounded-xl bg-muted/30 cursor-pointer select-none"
+                style={{
+                  left: `${file.position?.x || 30}px`,
+                  top: `${file.position?.y || 30}px`,
+                  width: '100px',
+                }}
+                onMouseDown={(e) => handleItemMouseDown(e, 'file', file.id, file.position || { x: 30, y: 30 })}
+              >
                 <File className="w-10 h-10 text-muted-foreground" />
                 <span className="text-sm font-medium text-foreground text-center max-w-[100px] truncate">{file.name}</span>
               </div>
             ))}
             {subFolders.map((subfolder) => (
-              <button
+              <div
                 key={subfolder.id}
+                className="absolute flex flex-col items-center gap-3 p-4 rounded-xl hover:bg-accent/50 transition-colors group cursor-pointer select-none"
+                style={{
+                  left: `${subfolder.position?.x || 30}px`,
+                  top: `${subfolder.position?.y || 30}px`,
+                  width: '100px',
+                }}
                 onDoubleClick={() => onOpenSubfolder(subfolder)}
                 onContextMenu={(e) => onSubfolderContextMenu(e, subfolder.id)}
-                className="flex flex-col items-center gap-3 p-4 rounded-xl hover:bg-accent/50 transition-colors group cursor-pointer"
+                onMouseDown={(e) => handleItemMouseDown(e, 'folder', subfolder.id, subfolder.position || { x: 30, y: 30 })}
                 draggable
                 onDragStart={(e) => {
                   e.dataTransfer.setData('source', 'window-subfolder');
@@ -102,9 +171,9 @@ export const FolderContent = ({
                 <span className="text-sm font-medium text-foreground text-center max-w-[100px] truncate">
                   {subfolder.name}
                 </span>
-              </button>
+              </div>
             ))}
-          </div>
+          </>
         )}
         {isDragOver && (
           <div className="absolute inset-0 bg-primary/20 border-4 border-dashed border-primary flex items-center justify-center pointer-events-none">

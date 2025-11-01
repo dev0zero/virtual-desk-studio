@@ -39,6 +39,7 @@ export interface FileItem {
   type: string;
   size: number;
   url?: string;
+  position?: Position;
 }
 
 export interface ClipboardItem {

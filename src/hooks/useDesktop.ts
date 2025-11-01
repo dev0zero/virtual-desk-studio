@@ -2,12 +2,12 @@ import { useState, useCallback } from 'react';
 import { Folder, WindowState, ClipboardItem, Position, Size, FileItem } from '@/types/desktop';
 
 const exampleFiles: FileItem[] = [
-  { id: 'f1', name: 'example.jpg', type: 'image/jpeg', size: 1024000 },
-  { id: 'f2', name: 'photo.png', type: 'image/png', size: 2048000 },
-  { id: 'f3', name: 'animation.gif', type: 'image/gif', size: 512000 },
-  { id: 'f4', name: 'song.mp3', type: 'audio/mp3', size: 3072000 },
-  { id: 'f5', name: 'sound.wav', type: 'audio/wav', size: 4096000 },
-  { id: 'f6', name: 'track.ogg', type: 'audio/ogg', size: 2560000 },
+  { id: 'f1', name: 'example.jpg', type: 'image/jpeg', size: 1024000, position: { x: 30, y: 30 } },
+  { id: 'f2', name: 'photo.png', type: 'image/png', size: 2048000, position: { x: 150, y: 30 } },
+  { id: 'f3', name: 'animation.gif', type: 'image/gif', size: 512000, position: { x: 270, y: 30 } },
+  { id: 'f4', name: 'song.mp3', type: 'audio/mp3', size: 3072000, position: { x: 30, y: 30 } },
+  { id: 'f5', name: 'sound.wav', type: 'audio/wav', size: 4096000, position: { x: 150, y: 30 } },
+  { id: 'f6', name: 'track.ogg', type: 'audio/ogg', size: 2560000, position: { x: 270, y: 30 } },
 ];
 
 export const useDesktop = () => {
@@ -436,6 +436,70 @@ export const useDesktop = () => {
     setWindows(prev => prev);
   }, []);
 
+  const updateSubfolderPosition = useCallback((folderId: string, subfolderId: string, position: Position) => {
+    setFolders(prev =>
+      prev.map(f => {
+        if (f.id === folderId && f.subFolders) {
+          return {
+            ...f,
+            subFolders: f.subFolders.map(sf =>
+              sf.id === subfolderId ? { ...sf, position } : sf
+            ),
+          };
+        }
+        if (f.subFolders) {
+          return {
+            ...f,
+            subFolders: f.subFolders.map(sf => {
+              if (sf.id === folderId && sf.subFolders) {
+                return {
+                  ...sf,
+                  subFolders: sf.subFolders.map(ssf =>
+                    ssf.id === subfolderId ? { ...ssf, position } : ssf
+                  ),
+                };
+              }
+              return sf;
+            }),
+          };
+        }
+        return f;
+      })
+    );
+  }, []);
+
+  const updateFilePosition = useCallback((folderId: string, fileId: string, position: Position) => {
+    setFolders(prev =>
+      prev.map(f => {
+        if (f.id === folderId && f.files) {
+          return {
+            ...f,
+            files: f.files.map(file =>
+              file.id === fileId ? { ...file, position } : file
+            ),
+          };
+        }
+        if (f.subFolders) {
+          return {
+            ...f,
+            subFolders: f.subFolders.map(sf => {
+              if (sf.id === folderId && sf.files) {
+                return {
+                  ...sf,
+                  files: sf.files.map(file =>
+                    file.id === fileId ? { ...file, position } : file
+                  ),
+                };
+              }
+              return sf;
+            }),
+          };
+        }
+        return f;
+      })
+    );
+  }, []);
+
   return {
     folders,
     windows,
@@ -461,5 +525,7 @@ export const useDesktop = () => {
     moveFolderByIdToFolder,
     moveFolderToDesktop,
     sortFolderContents,
+    updateSubfolderPosition,
+    updateFilePosition,
   };
 };

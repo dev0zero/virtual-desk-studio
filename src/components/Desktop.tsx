@@ -39,6 +39,8 @@ export const Desktop = () => {
     sortFolderContents,
     moveFolderByIdToFolder,
     moveFolderToDesktop,
+    updateSubfolderPosition,
+    updateFilePosition,
   } = useDesktop();
 
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
@@ -226,6 +228,8 @@ export const Desktop = () => {
                 toast.success('Папка перемещена');
               }
             }}
+            onUpdateSubfolderPosition={updateSubfolderPosition}
+            onUpdateFilePosition={updateFilePosition}
           />
         );
       })}

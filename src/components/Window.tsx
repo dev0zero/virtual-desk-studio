@@ -18,6 +18,8 @@ interface WindowProps {
   onSubfolderContextMenu: (e: React.MouseEvent, folderId: string, subfolderId: string) => void;
   onSortContents: () => void;
   onDropFolder: (sourceFolderId: string) => void;
+  onUpdateSubfolderPosition: (folderId: string, subfolderId: string, position: { x: number; y: number }) => void;
+  onUpdateFilePosition: (folderId: string, fileId: string, position: { x: number; y: number }) => void;
 }
 
 export const Window = ({
@@ -35,6 +37,8 @@ export const Window = ({
   onSubfolderContextMenu,
   onSortContents,
   onDropFolder,
+  onUpdateSubfolderPosition,
+  onUpdateFilePosition,
 }: WindowProps) => {
   const [isResizing, setIsResizing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -151,6 +155,12 @@ export const Window = ({
           }
           onUploadFile={onUploadFile}
           onSort={onSortContents}
+          onUpdateSubfolderPosition={(subfolderId, position) =>
+            onUpdateSubfolderPosition(folder.id, subfolderId, position)
+          }
+          onUpdateFilePosition={(fileId, position) =>
+            onUpdateFilePosition(folder.id, fileId, position)
+          }
         />
       </div>
       
