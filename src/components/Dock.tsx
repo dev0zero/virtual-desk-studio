@@ -1,5 +1,6 @@
 import { Folder, WindowState } from '@/types/desktop';
 import { useState } from 'react';
+import { Trash2 } from 'lucide-react';
 
 interface DockProps {
   pinnedFolders: Folder[];
@@ -23,18 +24,9 @@ export const Dock = ({ pinnedFolders, windows, onFolderClick, onWindowClick, all
           {trashFolder && (
             <button
               onClick={() => onFolderClick(trashFolder)}
-              className="dock-icon w-14 h-14 rounded-xl shadow-lg flex items-center justify-center relative group overflow-hidden"
+              className="dock-icon w-14 h-14 rounded-xl shadow-lg flex items-center justify-center relative group overflow-hidden bg-gradient-to-b from-gray-500 to-gray-600"
             >
-              <svg viewBox="0 0 64 64" className="w-full h-full">
-                <defs>
-                  <linearGradient id="dock-trash" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#6B7280" stopOpacity="0.9" />
-                    <stop offset="100%" stopColor="#4B5563" stopOpacity="1" />
-                  </linearGradient>
-                </defs>
-                <path d="M 8 20 L 8 52 C 8 54 9 56 11 56 L 53 56 C 55 56 56 54 56 52 L 56 24 C 56 22 55 20 53 20 Z" fill="url(#dock-trash)" opacity="0.85" />
-                <path d="M 8 20 L 8 14 C 8 12 9 10 11 10 L 26 10 L 30 16 L 53 16 C 55 16 56 17 56 19 L 56 20 Z" fill="url(#dock-trash)" />
-              </svg>
+              <Trash2 className="w-8 h-8 text-white" strokeWidth={2} />
               <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-3 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
                 {trashFolder.name}
               </div>

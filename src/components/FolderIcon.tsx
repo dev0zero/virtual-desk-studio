@@ -1,4 +1,4 @@
-import { Folder as FolderLucide } from 'lucide-react';
+import { Folder as FolderLucide, Trash2 } from 'lucide-react';
 import { Folder } from '@/types/desktop';
 import { useState, useRef, useEffect } from 'react';
 
@@ -116,32 +116,39 @@ export const FolderIcon = ({
     >
       <div className="flex flex-col items-center gap-2 p-3 rounded-lg hover:bg-white/20 dark:hover:bg-black/20 transition-colors pointer-events-none">
         <div className="relative w-16 h-16 flex items-center justify-center">
-          {/* Realistic folder icon */}
-          <svg viewBox="0 0 64 64" className="w-full h-full drop-shadow-md">
-            <defs>
-              <linearGradient id={`folder-grad-${folder.id}`} x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.9" />
-                <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity="1" />
-              </linearGradient>
-            </defs>
-            {/* Folder back */}
-            <path
-              d="M 8 20 L 8 52 C 8 54 9 56 11 56 L 53 56 C 55 56 56 54 56 52 L 56 24 C 56 22 55 20 53 20 Z"
-              fill={`url(#folder-grad-${folder.id})`}
-              opacity="0.85"
-            />
-            {/* Folder tab */}
-            <path
-              d="M 8 20 L 8 14 C 8 12 9 10 11 10 L 26 10 L 30 16 L 53 16 C 55 16 56 17 56 19 L 56 20 Z"
-              fill={`url(#folder-grad-${folder.id})`}
-            />
-            {/* Highlight */}
-            <path
-              d="M 12 20 L 12 50 C 12 51 12.5 52 13 52 L 51 52 C 51.5 52 52 51 52 50 L 52 24 C 52 23 51.5 22 51 22 L 12 22 Z"
-              fill="white"
-              opacity="0.15"
-            />
-          </svg>
+          {folder.isTrash ? (
+            // Trash icon
+            <div className="w-16 h-16 flex items-center justify-center bg-gradient-to-b from-gray-500 to-gray-600 rounded-2xl shadow-md">
+              <Trash2 className="w-10 h-10 text-white" strokeWidth={2} />
+            </div>
+          ) : (
+            // Realistic folder icon
+            <svg viewBox="0 0 64 64" className="w-full h-full drop-shadow-md">
+              <defs>
+                <linearGradient id={`folder-grad-${folder.id}`} x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.9" />
+                  <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity="1" />
+                </linearGradient>
+              </defs>
+              {/* Folder back */}
+              <path
+                d="M 8 20 L 8 52 C 8 54 9 56 11 56 L 53 56 C 55 56 56 54 56 52 L 56 24 C 56 22 55 20 53 20 Z"
+                fill={`url(#folder-grad-${folder.id})`}
+                opacity="0.85"
+              />
+              {/* Folder tab */}
+              <path
+                d="M 8 20 L 8 14 C 8 12 9 10 11 10 L 26 10 L 30 16 L 53 16 C 55 16 56 17 56 19 L 56 20 Z"
+                fill={`url(#folder-grad-${folder.id})`}
+              />
+              {/* Highlight */}
+              <path
+                d="M 12 20 L 12 50 C 12 51 12.5 52 13 52 L 51 52 C 51.5 52 52 51 52 50 L 52 24 C 52 23 51.5 22 51 22 L 12 22 Z"
+                fill="white"
+                opacity="0.15"
+              />
+            </svg>
+          )}
         </div>
         <span className="text-sm font-medium text-foreground text-center max-w-[80px] truncate bg-white/80 dark:bg-gray-800/80 px-2 py-1 rounded backdrop-blur-sm">
           {folder.name}
