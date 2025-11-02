@@ -47,15 +47,29 @@ export const ContextMenu = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [onClose]);
 
-  // Adjust position to keep menu within viewport
+  // Adjust position to keep menu within its container (offsetParent)
   useEffect(() => {
     if (menuRef.current) {
-      const rect = menuRef.current.getBoundingClientRect();
-      const adjustedX = Math.min(x, window.innerWidth - rect.width - 10);
-      const adjustedY = Math.min(y, window.innerHeight - rect.height - 10);
-      
-      menuRef.current.style.left = `${Math.max(10, adjustedX)}px`;
-      menuRef.current.style.top = `${Math.max(10, adjustedY)}px`;
+      const menu = menuRef.current;
+      const rect = menu.getBoundingClientRect();
+      const container = (menu.offsetParent as HTMLElement) || document.documentElement;
+      const containerRect = container.getBoundingClientRect();
+
+      let adjustedX = x;
+      let adjustedY = y;
+
+      if (x + rect.width > containerRect.width) {
+        adjustedX = containerRect.width - rect.width - 8;
+      }
+      if (y + rect.height > containerRect.height) {
+        adjustedY = containerRect.height - rect.height - 8;
+      }
+
+      adjustedX = Math.max(8, adjustedX);
+      adjustedY = Math.max(8, adjustedY);
+
+      menu.style.left = `${adjustedX}px`;
+      menu.style.top = `${adjustedY}px`;
     }
   }, [x, y]);
 
@@ -79,11 +93,11 @@ export const ContextMenu = ({
   return (
     <div
       ref={menuRef}
-      className="fixed bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-border z-[9999] min-w-[200px] py-1 animate-scale-in"
+      className="absolute bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-border z-[9999] min-w-[200px] py-1 animate-scale-in"
       style={{
         left: `${x}px`,
         top: `${y}px`,
-        opacity: 0.98,
+        pointerEvents: 'auto',
       }}
     >
       {menuItems.map((item, index) => {
