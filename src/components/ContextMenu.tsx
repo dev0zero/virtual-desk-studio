@@ -47,6 +47,18 @@ export const ContextMenu = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [onClose]);
 
+  // Adjust position to keep menu within viewport
+  useEffect(() => {
+    if (menuRef.current) {
+      const rect = menuRef.current.getBoundingClientRect();
+      const adjustedX = Math.min(x, window.innerWidth - rect.width - 10);
+      const adjustedY = Math.min(y, window.innerHeight - rect.height - 10);
+      
+      menuRef.current.style.left = `${Math.max(10, adjustedX)}px`;
+      menuRef.current.style.top = `${Math.max(10, adjustedY)}px`;
+    }
+  }, [x, y]);
+
   const menuItems = [
     onNew && { icon: Plus, label: 'Создать папку', action: onNew },
     onNewFile && { icon: Plus, label: 'Создать текстовый файл', action: onNewFile },
@@ -71,6 +83,7 @@ export const ContextMenu = ({
       style={{
         left: `${x}px`,
         top: `${y}px`,
+        opacity: 0.98,
       }}
     >
       {menuItems.map((item, index) => {
