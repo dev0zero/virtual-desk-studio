@@ -1,4 +1,4 @@
-import { Folder as FolderLucide, File } from 'lucide-react';
+import { Folder as FolderIcon, File } from 'lucide-react';
 import { Folder, FileItem, Position } from '@/types/desktop';
 import { useRef, useState, useEffect } from 'react';
 import { ContextMenu } from './ContextMenu';
@@ -196,7 +196,7 @@ export const FolderContent = ({
       >
         {subFolders.length === 0 && files.length === 0 ? (
           <div className="text-center text-muted-foreground py-12">
-            <FolderLucide className="w-16 h-16 mx-auto mb-4 opacity-30" />
+            <FolderIcon className="w-16 h-16 mx-auto mb-4 opacity-30" />
             <p className="text-lg font-medium mb-2">Папка пуста</p>
             <p className="text-sm">Создайте новую папку, чтобы организовать файлы</p>
           </div>
@@ -221,7 +221,7 @@ export const FolderContent = ({
             {subFolders.map((subfolder) => (
               <div
                 key={subfolder.id}
-                className="absolute flex flex-col items-center gap-3 p-4 rounded-xl hover:bg-accent/50 transition-colors group cursor-pointer select-none"
+                className="absolute flex flex-col items-center gap-2 p-3 rounded-lg hover:bg-white/20 dark:hover:bg-black/20 transition-colors cursor-pointer select-none"
                 style={{
                   left: `${subfolder.position?.x || 30}px`,
                   top: `${subfolder.position?.y || 30}px`,
@@ -240,10 +240,35 @@ export const FolderContent = ({
                   e.dataTransfer.effectAllowed = 'move';
                 }}
               >
-                <div className="w-20 h-20 flex items-center justify-center bg-gradient-to-br from-primary to-accent rounded-2xl shadow-md group-hover:scale-105 transition-transform">
-                  <FolderLucide className="w-10 h-10 text-white" />
+                <div className="relative w-16 h-16 flex items-center justify-center">
+                  {/* Realistic folder icon */}
+                  <svg viewBox="0 0 64 64" className="w-full h-full drop-shadow-md">
+                    <defs>
+                      <linearGradient id={`folder-grad-${subfolder.id}`} x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.9" />
+                        <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity="1" />
+                      </linearGradient>
+                    </defs>
+                    {/* Folder back */}
+                    <path
+                      d="M 8 20 L 8 52 C 8 54 9 56 11 56 L 53 56 C 55 56 56 54 56 52 L 56 24 C 56 22 55 20 53 20 Z"
+                      fill={`url(#folder-grad-${subfolder.id})`}
+                      opacity="0.85"
+                    />
+                    {/* Folder tab */}
+                    <path
+                      d="M 8 20 L 8 14 C 8 12 9 10 11 10 L 26 10 L 30 16 L 53 16 C 55 16 56 17 56 19 L 56 20 Z"
+                      fill={`url(#folder-grad-${subfolder.id})`}
+                    />
+                    {/* Highlight */}
+                    <path
+                      d="M 12 20 L 12 50 C 12 51 12.5 52 13 52 L 51 52 C 51.5 52 52 51 52 50 L 52 24 C 52 23 51.5 22 51 22 L 12 22 Z"
+                      fill="white"
+                      opacity="0.15"
+                    />
+                  </svg>
                 </div>
-                <span className="text-sm font-medium text-foreground text-center max-w-[100px] truncate">
+                <span className="text-sm font-medium text-foreground text-center max-w-[80px] truncate bg-white/80 dark:bg-gray-800/80 px-2 py-1 rounded backdrop-blur-sm">
                   {subfolder.name}
                 </span>
               </div>

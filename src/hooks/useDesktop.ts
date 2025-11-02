@@ -271,20 +271,78 @@ export const useDesktop = () => {
   const sortFolderContents = useCallback((folderId: string) => {
     setFolders(prev =>
       prev.map(f => {
-        if (f.id === folderId && f.subFolders) {
+        if (f.id === folderId) {
+          const sortedSubFolders = f.subFolders ? [...f.subFolders].sort((a, b) => a.name.localeCompare(b.name)) : [];
+          const sortedFiles = f.files ? [...f.files].sort((a, b) => a.name.localeCompare(b.name)) : [];
+          
+          // Arrange items in a grid layout
+          const allItems = [...sortedSubFolders, ...sortedFiles];
+          const columns = 5;
+          const spacingX = 120;
+          const spacingY = 130;
+          const startX = 30;
+          const startY = 30;
+          
+          const positionedSubFolders = sortedSubFolders.map((sf, index) => ({
+            ...sf,
+            position: {
+              x: startX + (index % columns) * spacingX,
+              y: startY + Math.floor(index / columns) * spacingY,
+            },
+          }));
+          
+          const positionedFiles = sortedFiles.map((file, index) => ({
+            ...file,
+            position: {
+              x: startX + ((index + sortedSubFolders.length) % columns) * spacingX,
+              y: startY + Math.floor((index + sortedSubFolders.length) / columns) * spacingY,
+            },
+          }));
+          
           return {
             ...f,
-            subFolders: [...f.subFolders].sort((a, b) => a.name.localeCompare(b.name)),
+            subFolders: positionedSubFolders,
+            files: positionedFiles,
           };
         }
         if (f.subFolders?.some(sf => sf.id === folderId)) {
           return {
             ...f,
-            subFolders: (f.subFolders || []).map(sf =>
-              sf.id === folderId && sf.subFolders
-                ? { ...sf, subFolders: [...sf.subFolders].sort((a, b) => a.name.localeCompare(b.name)) }
-                : sf
-            ),
+            subFolders: (f.subFolders || []).map(sf => {
+              if (sf.id === folderId) {
+                const sortedSubFolders = sf.subFolders ? [...sf.subFolders].sort((a, b) => a.name.localeCompare(b.name)) : [];
+                const sortedFiles = sf.files ? [...sf.files].sort((a, b) => a.name.localeCompare(b.name)) : [];
+                
+                const columns = 5;
+                const spacingX = 120;
+                const spacingY = 130;
+                const startX = 30;
+                const startY = 30;
+                
+                const positionedSubFolders = sortedSubFolders.map((ssf, index) => ({
+                  ...ssf,
+                  position: {
+                    x: startX + (index % columns) * spacingX,
+                    y: startY + Math.floor(index / columns) * spacingY,
+                  },
+                }));
+                
+                const positionedFiles = sortedFiles.map((file, index) => ({
+                  ...file,
+                  position: {
+                    x: startX + ((index + sortedSubFolders.length) % columns) * spacingX,
+                    y: startY + Math.floor((index + sortedSubFolders.length) / columns) * spacingY,
+                  },
+                }));
+                
+                return {
+                  ...sf,
+                  subFolders: positionedSubFolders,
+                  files: positionedFiles,
+                };
+              }
+              return sf;
+            }),
           };
         }
         return f;
