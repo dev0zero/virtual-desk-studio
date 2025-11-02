@@ -49,38 +49,19 @@ export const FolderContent = ({
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-
-    const container = document.getElementById(`folder-content-${folder.id}`);
-    if (container) {
-      const rect = container.getBoundingClientRect();
-      setContextMenu({ x: e.clientX - rect.left, y: e.clientY - rect.top });
-    } else {
-      setContextMenu({ x: e.clientX, y: e.clientY });
-    }
+    setContextMenu({ x: e.clientX, y: e.clientY });
   };
 
   const handleFileContextMenu = (e: React.MouseEvent, fileId: string) => {
     e.preventDefault();
     e.stopPropagation();
-    const container = document.getElementById(`folder-content-${folder.id}`);
-    if (container) {
-      const rect = container.getBoundingClientRect();
-      setContextMenu({ x: e.clientX - rect.left, y: e.clientY - rect.top, itemType: 'file', itemId: fileId });
-    } else {
-      setContextMenu({ x: e.clientX, y: e.clientY, itemType: 'file', itemId: fileId });
-    }
+    setContextMenu({ x: e.clientX, y: e.clientY, itemType: 'file', itemId: fileId });
   };
 
   const handleSubfolderContextMenuLocal = (e: React.MouseEvent, subfolderId: string) => {
     e.preventDefault();
     e.stopPropagation();
-    const container = document.getElementById(`folder-content-${folder.id}`);
-    if (container) {
-      const rect = container.getBoundingClientRect();
-      setContextMenu({ x: e.clientX - rect.left, y: e.clientY - rect.top, itemType: 'folder', itemId: subfolderId });
-    } else {
-      setContextMenu({ x: e.clientX, y: e.clientY, itemType: 'folder', itemId: subfolderId });
-    }
+    setContextMenu({ x: e.clientX, y: e.clientY, itemType: 'folder', itemId: subfolderId });
   };
 
   const handleCreateTextFile = () => {

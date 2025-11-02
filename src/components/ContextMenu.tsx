@@ -47,22 +47,20 @@ export const ContextMenu = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [onClose]);
 
-  // Adjust position to keep menu within its container (offsetParent)
+  // Adjust position to keep menu within viewport
   useEffect(() => {
     if (menuRef.current) {
       const menu = menuRef.current;
       const rect = menu.getBoundingClientRect();
-      const container = (menu.offsetParent as HTMLElement) || document.documentElement;
-      const containerRect = container.getBoundingClientRect();
 
       let adjustedX = x;
       let adjustedY = y;
 
-      if (x + rect.width > containerRect.width) {
-        adjustedX = containerRect.width - rect.width - 8;
+      if (x + rect.width > window.innerWidth) {
+        adjustedX = window.innerWidth - rect.width - 8;
       }
-      if (y + rect.height > containerRect.height) {
-        adjustedY = containerRect.height - rect.height - 8;
+      if (y + rect.height > window.innerHeight) {
+        adjustedY = window.innerHeight - rect.height - 8;
       }
 
       adjustedX = Math.max(8, adjustedX);
@@ -93,7 +91,7 @@ export const ContextMenu = ({
   return (
     <div
       ref={menuRef}
-      className="absolute bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-border z-[9999] min-w-[200px] py-1 animate-scale-in"
+      className="fixed bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-border z-[9999] min-w-[200px] py-1 animate-scale-in"
       style={{
         left: `${x}px`,
         top: `${y}px`,
