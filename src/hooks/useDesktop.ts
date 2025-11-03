@@ -722,6 +722,7 @@ export const useDesktop = () => {
     addFileToFolder,
     moveToFolder,
     moveFolderByIdToFolder,
+    moveFileToFolder,
     moveFolderToDesktop,
     sortFolderContents,
     updateSubfolderPosition,

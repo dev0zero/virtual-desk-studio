@@ -213,6 +213,16 @@ export const FolderContent = ({
                 }}
                 onMouseDown={(e) => handleItemMouseDown(e, 'file', file.id, file.position || { x: 30, y: 30 })}
                 onContextMenu={(e) => handleFileContextMenu(e, file.id)}
+                draggable
+                onDragStart={(e) => {
+                  e.dataTransfer.setData('source', 'window-file');
+                  e.dataTransfer.setData('fileId', file.id);
+                  e.dataTransfer.setData('sourceFolderId', folder.id);
+                  const dragImage = new Image();
+                  dragImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+                  e.dataTransfer.setDragImage(dragImage, 0, 0);
+                  e.dataTransfer.effectAllowed = 'move';
+                }}
               >
                 <File className="w-10 h-10 text-muted-foreground" />
                 <span className="text-sm font-medium text-foreground text-center max-w-[100px] truncate">{file.name}</span>
@@ -234,6 +244,7 @@ export const FolderContent = ({
                 onDragStart={(e) => {
                   e.dataTransfer.setData('source', 'window-subfolder');
                   e.dataTransfer.setData('folderId', subfolder.id);
+                  e.dataTransfer.setData('sourceFolderId', folder.id);
                   const dragImage = new Image();
                   dragImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
                   e.dataTransfer.setDragImage(dragImage, 0, 0);

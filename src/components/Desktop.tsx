@@ -38,6 +38,7 @@ export const Desktop = () => {
     moveToFolder,
     sortFolderContents,
     moveFolderByIdToFolder,
+    moveFileToFolder,
     moveFolderToDesktop,
     updateSubfolderPosition,
     updateFilePosition,
@@ -240,6 +241,14 @@ export const Desktop = () => {
             onRenameFile={renameFile}
             onDeleteSubfolder={deleteSubfolder}
             onRenameSubfolder={renameSubfolder}
+            onDropFileToWindow={(fileId, sourceFolderId) => {
+              moveFileToFolder(sourceFolderId, fileId, window.folderId);
+              toast.success('Файл перемещён');
+            }}
+            onDropSubfolderToWindow={(subfolderId, sourceFolderId) => {
+              moveFolderByIdToFolder(subfolderId, window.folderId);
+              toast.success('Папка перемещена');
+            }}
           />
         );
       })}

@@ -118,8 +118,8 @@ export const FolderIcon = ({
         <div className="relative w-16 h-16 flex items-center justify-center">
           {folder.isTrash ? (
             // Trash icon
-            <div className="w-16 h-16 flex items-center justify-center bg-gradient-to-b from-gray-500 to-gray-600 rounded-2xl shadow-md">
-              <Trash2 className="w-10 h-10 text-white" strokeWidth={2} />
+            <div className="w-12 h-12 flex items-center justify-center bg-gradient-to-b from-gray-500 to-gray-600 rounded-2xl shadow-md">
+              <Trash2 className="w-7 h-7 text-white" strokeWidth={2} />
             </div>
           ) : (
             // Realistic folder icon

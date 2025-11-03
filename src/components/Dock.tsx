@@ -26,7 +26,7 @@ export const Dock = ({ pinnedFolders, windows, onFolderClick, onWindowClick, all
               onClick={() => onFolderClick(trashFolder)}
               className="dock-icon w-14 h-14 rounded-xl shadow-lg flex items-center justify-center relative group overflow-hidden bg-gradient-to-b from-gray-500 to-gray-600"
             >
-              <Trash2 className="w-8 h-8 text-white" strokeWidth={2} />
+              <Trash2 className="w-6 h-6 text-white" strokeWidth={2} />
               <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-3 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
                 {trashFolder.name}
               </div>

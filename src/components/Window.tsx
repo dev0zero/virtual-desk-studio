@@ -25,6 +25,8 @@ interface WindowProps {
   onRenameFile: (folderId: string, fileId: string, newName: string) => void;
   onDeleteSubfolder: (parentId: string, subfolderId: string) => void;
   onRenameSubfolder: (parentId: string, subfolderId: string, newName: string) => void;
+  onDropFileToWindow: (fileId: string, sourceFolderId: string) => void;
+  onDropSubfolderToWindow: (subfolderId: string, sourceFolderId: string) => void;
 }
 
 export const Window = ({
@@ -49,6 +51,8 @@ export const Window = ({
   onRenameFile,
   onDeleteSubfolder,
   onRenameSubfolder,
+  onDropFileToWindow,
+  onDropSubfolderToWindow,
 }: WindowProps) => {
   const [isResizing, setIsResizing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -120,19 +124,19 @@ export const Window = ({
             onClick={onMinimize}
             className="window-button w-6 h-6 rounded-full bg-yellow-400 hover:bg-yellow-500 flex items-center justify-center transition-colors"
           >
-            <Minus className="w-3 h-3 text-yellow-900" />
+            <Minus className="w-2 h-2 text-yellow-900" />
           </button>
           <button
             onClick={onMaximize}
             className="window-button w-6 h-6 rounded-full bg-green-400 hover:bg-green-500 flex items-center justify-center transition-colors"
           >
-            <Maximize2 className="w-3 h-3 text-green-900" />
+            <Maximize2 className="w-2 h-2 text-green-900" />
           </button>
           <button
             onClick={onClose}
             className="window-button w-6 h-6 rounded-full bg-red-400 hover:bg-red-500 flex items-center justify-center transition-colors"
           >
-            <X className="w-3 h-3 text-red-900" />
+            <X className="w-2 h-2 text-red-900" />
           </button>
         </div>
       </div>
@@ -141,7 +145,7 @@ export const Window = ({
       <div
         className="h-[calc(100%-3rem)] overflow-hidden bg-white/50 dark:bg-gray-900/50"
         onDragOver={(e) => {
-          // Check if dragging a folder (by checking types or items)
+          // Check if dragging a folder, file, or subfolder
           if (e.dataTransfer.types.includes('source') || e.dataTransfer.types.includes('folderid')) {
             e.preventDefault();
             e.dataTransfer.dropEffect = 'move';
@@ -149,10 +153,21 @@ export const Window = ({
         }}
         onDrop={(e) => {
           const source = e.dataTransfer.getData('source');
-          const fid = e.dataTransfer.getData('folderId');
-          if (source === 'window-subfolder' && fid) {
+          const itemId = e.dataTransfer.getData('folderId') || e.dataTransfer.getData('fileId');
+          const sourceFolderId = e.dataTransfer.getData('sourceFolderId');
+          
+          if (source === 'window-subfolder' && itemId) {
             e.preventDefault();
-            onDropFolder(fid);
+            if (sourceFolderId && sourceFolderId !== folder.id) {
+              onDropSubfolderToWindow(itemId, sourceFolderId);
+            } else {
+              onDropFolder(itemId);
+            }
+          } else if (source === 'window-file' && itemId && sourceFolderId) {
+            e.preventDefault();
+            if (sourceFolderId !== folder.id) {
+              onDropFileToWindow(itemId, sourceFolderId);
+            }
           }
         }}
       >
