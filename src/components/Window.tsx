@@ -115,7 +115,7 @@ export const Window = ({
     >
       {/* Title Bar */}
       <div
-        className="h-12 bg-gradient-to-r from-primary to-accent flex items-center justify-between px-4 cursor-move"
+        className="h-9 bg-gradient-to-r from-primary to-accent flex items-center justify-between px-4 cursor-move"
         onMouseDown={handleMouseDown}
       >
         <span className="text-white font-semibold">{window.title}</span>
@@ -124,26 +124,26 @@ export const Window = ({
             onClick={onMinimize}
             className="window-button w-6 h-6 rounded-full bg-yellow-400 hover:bg-yellow-500 flex items-center justify-center transition-colors"
           >
-            <Minus className="w-2 h-2 text-yellow-900" />
+            <Minus className="w-4 h-4 text-yellow-900" />
           </button>
           <button
             onClick={onMaximize}
             className="window-button w-6 h-6 rounded-full bg-green-400 hover:bg-green-500 flex items-center justify-center transition-colors"
           >
-            <Maximize2 className="w-2 h-2 text-green-900" />
+            <Maximize2 className="w-4 h-4 text-green-900" />
           </button>
           <button
             onClick={onClose}
             className="window-button w-6 h-6 rounded-full bg-red-400 hover:bg-red-500 flex items-center justify-center transition-colors"
           >
-            <X className="w-2 h-2 text-red-900" />
+            <X className="w-4 h-4 text-red-900" />
           </button>
         </div>
       </div>
 
       {/* Content */}
       <div
-        className="h-[calc(100%-3rem)] overflow-hidden bg-white/50 dark:bg-gray-900/50"
+        className="h-[calc(100%-2.25rem)] overflow-hidden bg-white/50 dark:bg-gray-900/50"
         onDragOver={(e) => {
           e.preventDefault();
           e.dataTransfer.dropEffect = 'move';
@@ -161,6 +161,8 @@ export const Window = ({
             onDropFileToWindow(fileId, sourceFolderId);
           } else if (source === 'window-subfolder' && folderId && sourceFolderId && sourceFolderId !== folder.id) {
             onDropSubfolderToWindow(folderId, sourceFolderId);
+          } else if (source === 'desktop' && folderId && folderId !== folder.id) {
+            onDropFolder(folderId);
           }
         }}
       >

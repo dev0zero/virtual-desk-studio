@@ -71,6 +71,7 @@ export const FolderIcon = ({
           x: e.clientX - rect.left,
           y: e.clientY - rect.top,
         };
+        e.dataTransfer.setData('source', 'desktop');
         e.dataTransfer.setData('folderId', folder.id);
         const dragImage = new Image();
         dragImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
