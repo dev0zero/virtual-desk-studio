@@ -1,5 +1,6 @@
 import { Copy, Scissors, Trash2, Plus, Pin, PinOff, Clipboard, ArrowDownAZ, Edit, FolderOpen } from 'lucide-react';
 import { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 
 interface ContextMenuProps {
   x: number;
@@ -88,7 +89,7 @@ export const ContextMenu = ({
     onDelete && { icon: Trash2, label: 'Удалить', action: onDelete, danger: true },
   ].filter(Boolean);
 
-  return (
+  return createPortal(
     <div
       ref={menuRef}
       className="fixed bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-border z-[9999] min-w-[200px] py-1 animate-scale-in"
@@ -117,6 +118,7 @@ export const ContextMenu = ({
           </button>
         );
       })}
-    </div>
+    </div>,
+    document.body
   );
 };
