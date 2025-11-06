@@ -120,6 +120,14 @@ export const FolderContent = ({
     e.preventDefault();
     setIsDragOver(false);
     
+    // Check if this is a drag from another window
+    const source = e.dataTransfer.getData('source');
+    if (source === 'window-file' || source === 'window-subfolder') {
+      // Let the Window component handle cross-window drops
+      return;
+    }
+    
+    // Handle file uploads from computer
     const files = Array.from(e.dataTransfer.files);
     files.forEach(file => {
       onUploadFile({ id: Date.now().toString(), name: file.name, type: file.type, size: file.size, position: { x: 30, y: 30 } });

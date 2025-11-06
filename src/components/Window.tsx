@@ -145,29 +145,22 @@ export const Window = ({
       <div
         className="h-[calc(100%-3rem)] overflow-hidden bg-white/50 dark:bg-gray-900/50"
         onDragOver={(e) => {
-          // Check if dragging a folder, file, or subfolder
-          if (e.dataTransfer.types.includes('source') || e.dataTransfer.types.includes('folderid')) {
-            e.preventDefault();
-            e.dataTransfer.dropEffect = 'move';
-          }
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
         }}
         onDrop={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          
           const source = e.dataTransfer.getData('source');
-          const itemId = e.dataTransfer.getData('folderId') || e.dataTransfer.getData('fileId');
+          const fileId = e.dataTransfer.getData('fileId');
+          const folderId = e.dataTransfer.getData('folderId');
           const sourceFolderId = e.dataTransfer.getData('sourceFolderId');
           
-          if (source === 'window-subfolder' && itemId) {
-            e.preventDefault();
-            if (sourceFolderId && sourceFolderId !== folder.id) {
-              onDropSubfolderToWindow(itemId, sourceFolderId);
-            } else {
-              onDropFolder(itemId);
-            }
-          } else if (source === 'window-file' && itemId && sourceFolderId) {
-            e.preventDefault();
-            if (sourceFolderId !== folder.id) {
-              onDropFileToWindow(itemId, sourceFolderId);
-            }
+          if (source === 'window-file' && fileId && sourceFolderId && sourceFolderId !== folder.id) {
+            onDropFileToWindow(fileId, sourceFolderId);
+          } else if (source === 'window-subfolder' && folderId && sourceFolderId && sourceFolderId !== folder.id) {
+            onDropSubfolderToWindow(folderId, sourceFolderId);
           }
         }}
       >
