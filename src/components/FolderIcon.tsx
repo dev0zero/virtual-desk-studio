@@ -8,7 +8,7 @@ interface FolderIconProps {
   onContextMenu: (e: React.MouseEvent) => void;
   onDrag: (e: React.DragEvent) => void;
   onDragEnd: (position: { x: number; y: number }) => void;
-  onDrop: (targetId: string) => void;
+  onDrop: (targetId: string, sourceId: string) => void;
 }
 
 export const FolderIcon = ({
@@ -111,7 +111,7 @@ export const FolderIcon = ({
         setIsDropTarget(false);
         const sourceFolderId = e.dataTransfer.getData('folderId');
         if (sourceFolderId && sourceFolderId !== folder.id) {
-          onDrop(folder.id);
+          onDrop(folder.id, sourceFolderId);
         }
       }}
     >

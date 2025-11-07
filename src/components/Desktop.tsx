@@ -203,7 +203,7 @@ export const Desktop = () => {
           onContextMenu={(e) => handleFolderContextMenu(e, folder.id)}
           onDrag={(e) => handleDrag(folder.id, e)}
           onDragEnd={(pos) => handleDragEnd(folder.id, pos)}
-          onDrop={(targetId) => handleFolderDrop(targetId, folder.id)}
+          onDrop={(targetId, sourceId) => handleFolderDrop(targetId, sourceId)}
         />
       ))}
 

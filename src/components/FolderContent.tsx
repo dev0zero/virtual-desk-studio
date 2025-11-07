@@ -120,10 +120,10 @@ export const FolderContent = ({
     e.preventDefault();
     setIsDragOver(false);
     
-    // Check if this is a drag from another window
+    // Check if this is a drag from another window or from desktop
     const source = e.dataTransfer.getData('source');
-    if (source === 'window-file' || source === 'window-subfolder') {
-      // Let the Window component handle cross-window drops
+    if (source === 'window-file' || source === 'window-subfolder' || source === 'desktop') {
+      // Let the parent Window/Desktop handle cross-window/desktop drops
       return;
     }
     
