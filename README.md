@@ -40,4 +40,43 @@ This project is built with:
 
 ## How can I deploy this project?
 
-Simply open [Lovable](https://lovable.dev/projects/9e2c2497-2bca-4599-88e8-cc2a41939183) and click on Share -> Publish.
+Для привязки к PHP бэкенду есть несколько подходов:
+
+1. REST API (Самый простой)
+Создайте PHP API endpoints и вызывайте их через fetch:
+
+
+// Пример сохранения папок на PHP бэкенд
+const saveFolders = async (folders: Folder[]) => {
+  const response = await fetch('https://your-domain.com/api/folders/save', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${userToken}` // если нужна авторизация
+    },
+    body: JSON.stringify({ folders })
+  });
+  return response.json();
+};
+
+// Загрузка папок при старте
+const loadFolders = async () => {
+  const response = await fetch('https://your-domain.com/api/folders/load');
+  const data = await response.json();
+  return data.folders;
+};
+2. Что нужно на PHP стороне:
+
+// api/folders/save.php
+header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *'); // для CORS
+
+$data = json_decode(file_get_contents('php://input'), true);
+$folders = $data['folders'];
+
+// Сохранить в БД (MySQL/PostgreSQL)
+// $pdo->prepare("INSERT INTO folders...")->execute();
+
+echo json_encode(['success' => true]);
+3. Интеграция в useDesktop hook:
+Добавьте синхронизацию с бэкендом в src/hooks/useDesktop.ts
