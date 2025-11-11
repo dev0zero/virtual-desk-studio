@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Folder, WindowState, ClipboardItem, Position, Size, FileItem } from '@/types/desktop';
+import { Folder, WindowState, ClipboardItem, Position, Size, FileItem, Shortcut } from '@/types/desktop';
 import { loadFoldersFromBackend } from '@/services/api';
 
 const exampleFiles: FileItem[] = [
@@ -23,6 +23,7 @@ export const useDesktop = () => {
   const [clipboard, setClipboard] = useState<ClipboardItem | null>(null);
   const [maxZIndex, setMaxZIndex] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
+  const [shortcuts, setShortcuts] = useState<Shortcut[]>([]);
 
   // Загрузка данных с бэкенда при инициализации
   useEffect(() => {
@@ -720,11 +721,68 @@ export const useDesktop = () => {
     );
   }, []);
 
+  const createShortcut = useCallback((name: string, url: string, position: Position) => {
+    const newShortcut: Shortcut = {
+      id: Date.now().toString(),
+      name,
+      url,
+      position,
+    };
+    setShortcuts(prev => [...prev, newShortcut]);
+  }, []);
+
+  const deleteShortcut = useCallback((id: string) => {
+    setShortcuts(prev => prev.filter(s => s.id !== id));
+    setWindows(prev => prev.filter(w => w.folderId !== id));
+  }, []);
+
+  const updateShortcutPosition = useCallback((id: string, position: Position) => {
+    setShortcuts(prev => prev.map(s => (s.id === id ? { ...s, position } : s)));
+  }, []);
+
+  const renameShortcut = useCallback((id: string, newName: string) => {
+    setShortcuts(prev => prev.map(s => (s.id === id ? { ...s, name: newName } : s)));
+    setWindows(prev => prev.map(w => (w.folderId === id ? { ...w, title: newName } : w)));
+  }, []);
+
+  const toggleShortcutPin = useCallback((id: string) => {
+    setShortcuts(prev => prev.map(s => (s.id === id ? { ...s, isPinned: !s.isPinned } : s)));
+  }, []);
+
+  const openShortcut = useCallback((shortcut: Shortcut) => {
+    const existingWindow = windows.find(w => w.folderId === shortcut.id);
+    
+    if (existingWindow) {
+      setWindows(prev =>
+        prev.map(w =>
+          w.id === existingWindow.id
+            ? { ...w, isMinimized: false, zIndex: maxZIndex + 1 }
+            : w
+        )
+      );
+      setMaxZIndex(prev => prev + 1);
+    } else {
+      const newWindow: WindowState = {
+        id: Date.now().toString(),
+        folderId: shortcut.id,
+        title: shortcut.name,
+        position: { x: 200 + windows.length * 30, y: 100 + windows.length * 30 },
+        size: { width: 800, height: 600 },
+        isMinimized: false,
+        isMaximized: false,
+        zIndex: maxZIndex + 1,
+      };
+      setWindows(prev => [...prev, newWindow]);
+      setMaxZIndex(prev => prev + 1);
+    }
+  }, [windows, maxZIndex]);
+
   return {
     folders,
     windows,
     clipboard,
     isLoading,
+    shortcuts,
     createFolder,
     deleteFolder,
     updateFolderPosition,
@@ -754,5 +812,11 @@ export const useDesktop = () => {
     renameFile,
     deleteSubfolder,
     renameSubfolder,
+    createShortcut,
+    deleteShortcut,
+    updateShortcutPosition,
+    renameShortcut,
+    toggleShortcutPin,
+    openShortcut,
   };
 };

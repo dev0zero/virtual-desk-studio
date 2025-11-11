@@ -46,3 +46,11 @@ export interface ClipboardItem {
   type: 'copy' | 'cut';
   folderId: string;
 }
+
+export interface Shortcut {
+  id: string;
+  name: string;
+  url: string;
+  position: Position;
+  isPinned?: boolean;
+}

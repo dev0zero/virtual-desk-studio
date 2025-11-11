@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { useDesktop } from '@/hooks/useDesktop';
 import { FolderIcon } from './FolderIcon';
 import { Window } from './Window';
+import { WebWindow } from './WebWindow';
 import { Dock } from './Dock';
 import { ContextMenu } from './ContextMenu';
+import { ShortcutIcon } from './ShortcutIcon';
 import { toast } from 'sonner';
 import { Folder } from '@/types/desktop';
 
@@ -11,6 +13,7 @@ interface ContextMenuState {
   x: number;
   y: number;
   folderId?: string;
+  shortcutId?: string;
 }
 
 export const Desktop = () => {
@@ -19,6 +22,7 @@ export const Desktop = () => {
     windows,
     clipboard,
     isLoading,
+    shortcuts,
     createFolder,
     deleteFolder,
     updateFolderPosition,
@@ -48,6 +52,12 @@ export const Desktop = () => {
     renameFile,
     deleteSubfolder,
     renameSubfolder,
+    createShortcut,
+    deleteShortcut,
+    updateShortcutPosition,
+    renameShortcut,
+    toggleShortcutPin,
+    openShortcut,
   } = useDesktop();
 
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
@@ -61,6 +71,12 @@ export const Desktop = () => {
     e.preventDefault();
     e.stopPropagation();
     setContextMenu({ x: e.clientX, y: e.clientY, folderId });
+  };
+
+  const handleShortcutContextMenu = (e: React.MouseEvent, shortcutId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setContextMenu({ x: e.clientX, y: e.clientY, shortcutId });
   };
 
   const handleDrag = (folderId: string, e: React.DragEvent) => {
@@ -140,8 +156,47 @@ export const Desktop = () => {
     }
   };
 
+  const handleCreateShortcut = () => {
+    const name = prompt('Введите имя ярлыка:');
+    if (!name) return;
+    
+    const url = prompt('Введите URL (например: https://example.com или /page):');
+    if (!url) return;
+    
+    createShortcut(
+      name,
+      url,
+      contextMenu ? { x: contextMenu.x, y: contextMenu.y } : { x: 100, y: 100 }
+    );
+    toast.success('Ярлык создан');
+  };
+
+  const handleDeleteShortcut = (shortcutId: string) => {
+    deleteShortcut(shortcutId);
+    toast.success('Ярлык удален');
+  };
+
+  const handleRenameShortcut = (shortcutId: string) => {
+    const shortcut = shortcuts.find(s => s.id === shortcutId);
+    if (shortcut) {
+      const newName = prompt('Введите новое имя ярлыка:', shortcut.name);
+      if (newName && newName !== shortcut.name) {
+        renameShortcut(shortcutId, newName);
+        toast.success('Ярлык переименован');
+      }
+    }
+  };
+
+  const handleToggleShortcutPin = (shortcutId: string) => {
+    const shortcut = shortcuts.find(s => s.id === shortcutId);
+    toggleShortcutPin(shortcutId);
+    toast.success(shortcut?.isPinned ? 'Открепить от дока' : 'Закреплено в доке');
+  };
+
   const pinnedFolders = folders.filter(f => f.isPinned);
+  const pinnedShortcuts = shortcuts.filter(s => s.isPinned);
   const currentFolder = contextMenu?.folderId ? folders.find(f => f.id === contextMenu.folderId) : undefined;
+  const currentShortcut = contextMenu?.shortcutId ? shortcuts.find(s => s.id === contextMenu.shortcutId) : undefined;
 
   const getFolderById = (id: string): Folder | undefined => {
     // Search in top-level folders
@@ -220,9 +275,40 @@ export const Desktop = () => {
         />
       ))}
 
+      {/* Shortcuts */}
+      {shortcuts.map(shortcut => (
+        <ShortcutIcon
+          key={shortcut.id}
+          shortcut={shortcut}
+          onDoubleClick={() => openShortcut(shortcut)}
+          onContextMenu={(e) => handleShortcutContextMenu(e, shortcut.id)}
+          onDrag={() => {}}
+          onDragEnd={(pos) => updateShortcutPosition(shortcut.id, pos)}
+        />
+      ))}
+
       {/* Windows */}
       {windows.map(window => {
         const windowFolder = getFolderById(window.folderId);
+        const windowShortcut = shortcuts.find(s => s.id === window.folderId);
+        
+        if (windowShortcut) {
+          return (
+            <WebWindow
+              key={window.id}
+              window={window}
+              url={windowShortcut.url}
+              title={window.title}
+              onClose={() => closeWindow(window.id)}
+              onMinimize={() => minimizeWindow(window.id)}
+              onMaximize={() => maximizeWindow(window.id)}
+              onFocus={() => focusWindow(window.id)}
+              onMove={(x, y) => updateWindowPosition(window.id, { x, y })}
+              onResize={(width, height) => updateWindowSize(window.id, { width, height })}
+            />
+          );
+        }
+        
         if (!windowFolder) return null;
         
         return (
@@ -269,9 +355,12 @@ export const Desktop = () => {
       {/* Dock */}
       <Dock
         pinnedFolders={pinnedFolders}
+        pinnedShortcuts={pinnedShortcuts}
         windows={windows}
         allFolders={folders}
+        allShortcuts={shortcuts}
         onFolderClick={openWindow}
+        onShortcutClick={openShortcut}
         onWindowClick={(windowId) => {
           const w = windows.find(win => win.id === windowId);
           if (!w) return;
@@ -289,15 +378,34 @@ export const Desktop = () => {
           x={contextMenu.x}
           y={contextMenu.y}
           onClose={() => setContextMenu(null)}
-          onNew={!contextMenu.folderId ? handleCreateFolder : undefined}
-          onPaste={!contextMenu.folderId && clipboard ? handlePaste : undefined}
-          onSort={!contextMenu.folderId ? handleSortFolders : undefined}
+          onNew={!contextMenu.folderId && !contextMenu.shortcutId ? handleCreateFolder : undefined}
+          onNewShortcut={!contextMenu.folderId && !contextMenu.shortcutId ? handleCreateShortcut : undefined}
+          onPaste={!contextMenu.folderId && !contextMenu.shortcutId && clipboard ? handlePaste : undefined}
+          onSort={!contextMenu.folderId && !contextMenu.shortcutId ? handleSortFolders : undefined}
           onCopy={contextMenu.folderId ? () => handleCopyFolder(contextMenu.folderId!) : undefined}
           onCut={contextMenu.folderId ? () => handleCutFolder(contextMenu.folderId!) : undefined}
-          onRename={contextMenu.folderId ? () => handleRenameFolder(contextMenu.folderId!) : undefined}
-          onDelete={contextMenu.folderId ? () => handleDeleteFolder(contextMenu.folderId!) : undefined}
-          onPin={contextMenu.folderId ? () => handleTogglePin(contextMenu.folderId!) : undefined}
-          isPinned={currentFolder?.isPinned}
+          onRename={
+            contextMenu.folderId 
+              ? () => handleRenameFolder(contextMenu.folderId!)
+              : contextMenu.shortcutId
+              ? () => handleRenameShortcut(contextMenu.shortcutId!)
+              : undefined
+          }
+          onDelete={
+            contextMenu.folderId 
+              ? () => handleDeleteFolder(contextMenu.folderId!)
+              : contextMenu.shortcutId
+              ? () => handleDeleteShortcut(contextMenu.shortcutId!)
+              : undefined
+          }
+          onPin={
+            contextMenu.folderId 
+              ? () => handleTogglePin(contextMenu.folderId!)
+              : contextMenu.shortcutId
+              ? () => handleToggleShortcutPin(contextMenu.shortcutId!)
+              : undefined
+          }
+          isPinned={currentFolder?.isPinned || currentShortcut?.isPinned}
         />
       )}
     </div>

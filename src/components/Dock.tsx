@@ -1,16 +1,19 @@
-import { Folder, WindowState } from '@/types/desktop';
+import { Folder, WindowState, Shortcut } from '@/types/desktop';
 import { useState } from 'react';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Link, ExternalLink } from 'lucide-react';
 
 interface DockProps {
   pinnedFolders: Folder[];
+  pinnedShortcuts: Shortcut[];
   windows: WindowState[];
   onFolderClick: (folder: Folder) => void;
   onWindowClick: (windowId: string) => void;
+  onShortcutClick: (shortcut: Shortcut) => void;
   allFolders: Folder[];
+  allShortcuts: Shortcut[];
 }
 
-export const Dock = ({ pinnedFolders, windows, onFolderClick, onWindowClick, allFolders }: DockProps) => {
+export const Dock = ({ pinnedFolders, pinnedShortcuts, windows, onFolderClick, onWindowClick, onShortcutClick, allFolders, allShortcuts }: DockProps) => {
   const [hiddenApps, setHiddenApps] = useState<string[]>([]);
   const activeWindows = windows.filter(w => !w.isMinimized);
   const minimizedWindows = windows.filter(w => w.isMinimized);
@@ -63,6 +66,27 @@ export const Dock = ({ pinnedFolders, windows, onFolderClick, onWindowClick, all
               </div>
             </button>
           ))}
+
+          {/* Pinned Shortcuts */}
+          {pinnedShortcuts.map(shortcut => {
+            const isExternal = shortcut.url.startsWith('http://') || shortcut.url.startsWith('https://');
+            const Icon = isExternal ? ExternalLink : Link;
+            return (
+              <button
+                key={shortcut.id}
+                onClick={() => onShortcutClick(shortcut)}
+                className="dock-icon w-14 h-14 rounded-xl shadow-lg flex items-center justify-center relative group overflow-hidden bg-gradient-to-br from-blue-400 to-blue-600"
+              >
+                <Icon className="w-7 h-7 text-white" />
+                {activeWindows.some(w => w.folderId === shortcut.id) && (
+                  <div className="absolute -bottom-1 w-1 h-1 bg-white rounded-full" />
+                )}
+                <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-3 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                  {shortcut.name}
+                </div>
+              </button>
+            );
+          })}
 
           {/* Minimized Windows */}
           {minimizedWindows.map(window => (
