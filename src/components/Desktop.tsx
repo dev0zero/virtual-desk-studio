@@ -18,6 +18,7 @@ export const Desktop = () => {
     folders,
     windows,
     clipboard,
+    isLoading,
     createFolder,
     deleteFolder,
     updateFolderPosition,
@@ -186,6 +187,18 @@ export const Desktop = () => {
       }
     }
   };
+
+  // Показываем индикатор загрузки, пока данные загружаются с бэкенда
+  if (isLoading) {
+    return (
+      <div className="w-screen h-screen bg-gradient-to-br from-[hsl(var(--desktop-bg-start))] to-[hsl(var(--desktop-bg-end))] flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-lg font-medium text-foreground">Загрузка данных...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

@@ -1,5 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Folder, WindowState, ClipboardItem, Position, Size, FileItem } from '@/types/desktop';
+import { loadFoldersFromBackend } from '@/services/api';
 
 const exampleFiles: FileItem[] = [
   { id: 'f1', name: 'example.jpg', type: 'image/jpeg', size: 1024000, position: { x: 30, y: 30 } },
@@ -21,6 +22,26 @@ export const useDesktop = () => {
   const [windows, setWindows] = useState<WindowState[]>([]);
   const [clipboard, setClipboard] = useState<ClipboardItem | null>(null);
   const [maxZIndex, setMaxZIndex] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Загрузка данных с бэкенда при инициализации
+  useEffect(() => {
+    const loadData = async () => {
+      setIsLoading(true);
+      try {
+        const loadedFolders = await loadFoldersFromBackend();
+        if (loadedFolders.length > 0) {
+          setFolders(loadedFolders);
+        }
+      } catch (error) {
+        console.error('Ошибка при загрузке папок:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
 
   const createFolder = useCallback((name: string, position: Position, parentId?: string) => {
     const newFolder: Folder = {
@@ -703,6 +724,7 @@ export const useDesktop = () => {
     folders,
     windows,
     clipboard,
+    isLoading,
     createFolder,
     deleteFolder,
     updateFolderPosition,
