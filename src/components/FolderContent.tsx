@@ -2,6 +2,7 @@ import { Folder as FolderIcon, File } from 'lucide-react';
 import { Folder, FileItem, Position } from '@/types/desktop';
 import { useRef, useState, useEffect } from 'react';
 import { ContextMenu } from './ContextMenu';
+import { FilePreview } from './FilePreview';
 
 interface FolderContentProps {
   folder: Folder;
@@ -38,6 +39,11 @@ export const FolderContent = ({
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; itemType?: 'file' | 'folder'; itemId?: string } | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [draggingItem, setDraggingItem] = useState<{ type: 'folder' | 'file'; id: string; offset: Position } | null>(null);
+  const [focusedFileId, setFocusedFileId] = useState<string | null>(null);
+  const [previewFile, setPreviewFile] = useState<FileItem | null>(null);
+
+  const subFolders = folder.subFolders || [];
+  const files = folder.files || [];
 
   const handleCreateFolder = () => {
     const name = prompt('Введите имя новой папки:');
@@ -182,8 +188,21 @@ export const FolderContent = ({
     };
   }, [draggingItem, folder.id, onUpdateSubfolderPosition, onUpdateFilePosition]);
 
-  const subFolders = folder.subFolders || [];
-  const files = folder.files || [];
+  // Handle spacebar for file preview
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Space' && focusedFileId && !previewFile) {
+        e.preventDefault();
+        const file = files.find(f => f.id === focusedFileId);
+        if (file) {
+          setPreviewFile(file);
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [focusedFileId, files, previewFile]);
 
   return (
     <div className="h-full flex flex-col">
@@ -213,12 +232,17 @@ export const FolderContent = ({
             {files.map((file) => (
               <div
                 key={file.id}
-                className="absolute flex flex-col items-center gap-3 p-4 rounded-xl bg-muted/30 hover:bg-accent/50 transition-colors cursor-pointer select-none"
+                className={`absolute flex flex-col items-center gap-3 p-4 rounded-xl transition-colors cursor-pointer select-none ${
+                  focusedFileId === file.id 
+                    ? 'bg-primary/30 ring-2 ring-primary' 
+                    : 'bg-muted/30 hover:bg-accent/50'
+                }`}
                 style={{
                   left: `${file.position?.x || 30}px`,
                   top: `${file.position?.y || 30}px`,
                   width: '100px',
                 }}
+                onClick={() => setFocusedFileId(file.id)}
                 onMouseDown={(e) => handleItemMouseDown(e, 'file', file.id, file.position || { x: 30, y: 30 })}
                 onContextMenu={(e) => handleFileContextMenu(e, file.id)}
                 draggable
@@ -312,6 +336,16 @@ export const FolderContent = ({
           onOpen={contextMenu.itemId ? handleOpenItem : undefined}
           onDelete={contextMenu.itemId ? handleDeleteItem : undefined}
           onRename={contextMenu.itemId ? handleRenameItem : undefined}
+        />
+      )}
+
+      {previewFile && (
+        <FilePreview
+          file={previewFile}
+          onClose={() => {
+            setPreviewFile(null);
+            setFocusedFileId(null);
+          }}
         />
       )}
     </div>
